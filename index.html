@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Mariage 💍</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #fdf6f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+    header { text-align: center; margin-bottom: 2rem; }
+    header .emoji { font-size: 2.5rem; }
+    header h1 { font-size: 1.6rem; font-weight: 600; color: #4a2060; margin-top: 0.5rem; }
+    header p { color: #8a7090; font-size: 0.9rem; margin-top: 0.25rem; }
+    #app { width: 100%; max-width: 480px; }
+
+    .card {
+      background: white; border-radius: 16px;
+      box-shadow: 0 2px 16px rgba(74,32,96,0.08);
+      padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .question-num {
+      font-size: 0.75rem; font-weight: 600; color: #b08abb;
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;
+    }
+    .question-text { font-size: 1.15rem; font-weight: 600; color: #2d1a3d; line-height: 1.4; margin-bottom: 1.25rem; }
+    .options { display: flex; flex-direction: column; gap: 0.6rem; }
+    .option-btn {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.85rem 1rem; border-radius: 10px;
+      border: 2px solid #e8dff0; background: #fdf6ff;
+      cursor: pointer; text-align: left; font-size: 1rem; color: #2d1a3d;
+      transition: border-color 0.15s, background 0.15s; width: 100%;
+    }
+    .option-btn:hover { border-color: #a066c0; background: #f5eaff; }
+    .option-btn.selected { border-color: #7c3aed; background: #ede9fe; }
+    .option-btn.disabled { cursor: default; opacity: 0.7; pointer-events: none; }
+    .option-letter {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #e8dff0; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.85rem; color: #4a2060; flex-shrink: 0;
+    }
+    .option-btn.selected .option-letter { background: #7c3aed; color: white; }
+    .submit-btn {
+      width: 100%; padding: 0.9rem; background: #7c3aed; color: white;
+      border: none; border-radius: 10px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; margin-top: 1rem; transition: background 0.15s;
+    }
+    .submit-btn:disabled { background: #c4b5d4; cursor: default; }
+    .submit-btn:not(:disabled):hover { background: #6d28d9; }
+    .voted-msg { text-align: center; padding: 1rem; color: #15803d; font-weight: 500; }
+    .voted-msg .checkmark { font-size: 1.5rem; display: block; margin-bottom: 0.25rem; }
+    #state-wait, #state-done { text-align: center; padding: 3rem 1rem; color: #8a7090; }
+    #state-wait .emoji, #state-done .emoji { font-size: 3rem; display: block; margin-bottom: 1rem; }
+    #state-done h2 { color: #4a2060; font-size: 1.4rem; }
+    .error-box {
+      background: #fee2e2; border: 1px solid #fca5a5; border-radius: 10px;
+      padding: 1rem; color: #991b1b; font-size: 0.9rem; margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="emoji">💍</div>
+    <h1>Quiz du Mariage</h1>
+    <p id="subtitle">Chargement…</p>
+  </header>
+  <div id="app">
+    <div id="state-wait" style="display:none">
+      <span class="emoji">⏳</span>
+      <p>Patientez, la prochaine question arrive bientôt…</p>
+    </div>
+    <div id="state-done" style="display:none">
+      <span class="emoji">🎉</span>
+      <h2>Merci d'avoir joué !</h2>
+      <p style="margin-top:0.5rem;color:#8a7090">Félicitations aux mariés 💕</p>
+    </div>
+    <div id="state-question" style="display:none"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // ============================================================
+    // 🔧 CONFIGURATION SUPABASE
+    // Copiez depuis : Settings → API dans votre projet Supabase
+    // ============================================================
+    const SUPABASE_URL  = "https://wnovazgofdfbhqivokbx.supabase.co";
+    const SUPABASE_ANON = "sb_publishable_EB6_xTYduYkOBifywzM9Aw_1_of-xGW";
+
+    // ============================================================
+
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // Identifiant unique de cet appareil (persiste entre sessions)
+    let deviceId = localStorage.getItem("mq_device_id");
+    if (!deviceId) {
+      deviceId = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("mq_device_id", deviceId);
+    }
+
+    const stateWait = document.getElementById("state-wait");
+    const stateDone = document.getElementById("state-done");
+    const stateQ    = document.getElementById("state-question");
+    const subtitle  = document.getElementById("subtitle");
+
+    function showOnly(el) {
+      [stateWait, stateDone, stateQ].forEach(e => e.style.display = "none");
+      el.style.display = "block";
+    }
+
+    async function init() {
+      const { data, error } = await sb.from("quiz_state").select("*").eq("id", 1).single();
+      if (error) {
+        subtitle.textContent = "Erreur de connexion";
+        stateQ.innerHTML = `<div class="error-box">Impossible de charger le quiz.<br>Vérifiez la configuration Supabase.</div>`;
+        showOnly(stateQ);
+        return;
+      }
+      handleState(data);
+    }
+
+    function handleState(state) {
+      if (!state || state.status === "waiting") {
+        subtitle.textContent = "En attente du lancement…";
+        showOnly(stateWait);
+      } else if (state.status === "done") {
+        subtitle.textContent = "Quiz terminé !";
+        showOnly(stateDone);
+      } else if (state.status === "question") {
+        loadQuestion(state.current_question_index);
+      }
+    }
+
+    // Écoute les changements d'état en temps réel
+    sb.channel("quiz_state_ch")
+      .on("postgres_changes",
+        { event: "UPDATE", schema: "public", table: "quiz_state", filter: "id=eq.1" },
+        payload => handleState(payload.new))
+      .subscribe();
+
+    async function loadQuestion(idx) {
+      const { data: questions } = await sb
+        .from("quiz_questions").select("*").order("position");
+      if (!questions || idx >= questions.length) return;
+
+      const q = questions[idx];
+      subtitle.textContent = `Question ${idx + 1} / ${questions.length}`;
+
+      const { data: existing } = await sb.from("quiz_votes")
+        .select("answer_index")
+        .eq("question_id", q.id)
+        .eq("device_id", deviceId)
+        .maybeSingle();
+
+      renderQuestion(q, idx, questions.length, !!existing, existing?.answer_index ?? null);
+      showOnly(stateQ);
+    }
+
+    function renderQuestion(q, idx, total, alreadyVoted, myVote) {
+      const letters = ["A","B","C","D","E","F"];
+      const options  = q.options;
+
+      stateQ.innerHTML = `
+        <div class="card">
+          <div class="question-num">Question ${idx + 1} / ${total}</div>
+          <div class="question-text">${q.text}</div>
+          <div class="options" id="options-list"></div>
+          ${alreadyVoted
+            ? `<div class="voted-msg"><span class="checkmark">✅</span>Votre réponse a bien été enregistrée !</div>`
+            : `<button class="submit-btn" id="submit-btn" disabled>Valider ma réponse</button>`}
+        </div>`;
+
+      const list = document.getElementById("options-list");
+      let selected = alreadyVoted ? myVote : null;
+
+      options.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn"
+          + (alreadyVoted && myVote === i ? " selected" : "")
+          + (alreadyVoted ? " disabled" : "");
+        btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt}</span>`;
+        if (!alreadyVoted) {
+          btn.addEventListener("click", () => {
+            selected = i;
+            list.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            document.getElementById("submit-btn").disabled = false;
+          });
+        }
+        list.appendChild(btn);
+      });
+
+      if (!alreadyVoted) {
+        document.getElementById("submit-btn").addEventListener("click", async () => {
+          if (selected === null) return;
+          const btn = document.getElementById("submit-btn");
+          btn.disabled = true;
+          btn.textContent = "Envoi…";
+          const { error } = await sb.from("quiz_votes").insert({
+            question_id: q.id,
+            device_id: deviceId,
+            answer_index: selected
+          });
+          // 23505 = violation de contrainte UNIQUE (double-vote protégé par la DB)
+          if (error && error.code !== "23505") {
+            btn.textContent = "Erreur — réessayez";
+            btn.disabled = false;
+            return;
+          }
+          renderQuestion(q, idx, total, true, selected);
+        });
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
