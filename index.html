@@ -230,9 +230,6 @@ function show(name) {
 }
 
 // ── Login ──────────────────────────────────────────────────────
-// Si l'invité a déjà un prénom en localStorage, on passe directement
-if (username) initAfterLogin();
-
 const loginInput = document.getElementById("login-input");
 loginInput.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
 
@@ -425,6 +422,27 @@ async function showDone() {
 
   show("done");
 }
+
+// ── Point d'entrée ─────────────────────────────────────────────
+// Vérifie si l'invité existe vraiment en DB avant de bypasser le login
+async function init() {
+  if (username) {
+    const { data: existing } = await sb.from("quiz_players")
+      .select("username").eq("device_id", deviceId).maybeSingle();
+    if (existing) {
+      // Player confirmé en DB : on reprend la session
+      username = existing.username; // source de vérité = DB
+      initAfterLogin();
+      return;
+    }
+    // Introuvable en DB (ex: reset des joueurs) → on repart du login
+    username = null;
+    localStorage.removeItem("mq_username");
+  }
+  show("login");
+}
+
+init();
 </script>
 </body>
 </html>
