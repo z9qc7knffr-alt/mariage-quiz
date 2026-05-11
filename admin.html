@@ -1,42 +1,38 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin — Quiz Mariage 💍</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #1a0d2e;
-      --surface:   #2d1a4e;
-      --surface2:  #3d2060;
-      --border:    #4a2878;
-      --purple:    #7c3aed;
-      --purple-lt: #c084fc;
-      --text:      #f0e8ff;
-      --muted:     #b08abb;
-      --faint:     #8a7090;
+      --bg:       #1a0d2e;
+      --surface:  #2d1a4e;
+      --surface2: #3d2060;
+      --border:   #4a2878;
+      --purple:   #7c3aed;
+      --purple-lt:#c084fc;
+      --text:     #f0e8ff;
+      --muted:    #b08abb;
+      --faint:    #8a7090;
+      --green:    #16a34a;
+      --gold:     #f59e0b;
     }
 
-    body {
-      font-family: system-ui, sans-serif;
-      background: var(--bg); color: var(--text);
-      min-height: 100vh;
-    }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* ── Onglets ─────────────────────────────────────── */
+    /* ── Onglets ── */
     .tab-bar {
-      display: flex; gap: 0;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-      position: sticky; top: 0; z-index: 10;
+      display: flex; border-bottom: 1px solid var(--border);
+      background: var(--surface); position: sticky; top: 0; z-index: 10;
     }
     .tab-btn {
-      padding: 1rem 1.5rem; font-size: 0.9rem; font-weight: 600;
+      padding: 1rem 1.4rem; font-size: .88rem; font-weight: 600;
       background: none; border: none; color: var(--muted);
       cursor: pointer; border-bottom: 3px solid transparent;
-      transition: color 0.15s, border-color 0.15s;
+      transition: color .15s, border-color .15s;
     }
     .tab-btn.active { color: var(--purple-lt); border-bottom-color: var(--purple-lt); }
     .tab-btn:hover:not(.active) { color: var(--text); }
@@ -44,76 +40,63 @@
     .tab-pane { display: none; padding: 2rem; max-width: 860px; margin: 0 auto; }
     .tab-pane.active { display: block; }
 
-    /* ── Titres de section ───────────────────────────── */
-    .section-title {
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
-      text-transform: uppercase; color: var(--muted);
-      margin-bottom: 1rem; padding-bottom: 0.4rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    /* ── Boutons ─────────────────────────────────────── */
+    /* ── Boutons ── */
     .btn {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.55rem 1.1rem; border-radius: 8px; border: none;
-      font-size: 0.88rem; font-weight: 600; cursor: pointer;
-      transition: filter 0.15s, opacity 0.15s; white-space: nowrap;
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .55rem 1.1rem; border-radius: 8px; border: none;
+      font-size: .88rem; font-weight: 600; cursor: pointer;
+      transition: filter .15s, opacity .15s; white-space: nowrap;
     }
-    .btn:disabled { opacity: 0.35; cursor: default; }
+    .btn:disabled { opacity: .35; cursor: default; }
     .btn:not(:disabled):hover { filter: brightness(1.12); }
-    .btn-purple { background: var(--purple);  color: #fff; }
-    .btn-green  { background: #16a34a;         color: #fff; }
-    .btn-gray   { background: #374151;         color: #fff; }
-    .btn-red    { background: #b91c1c;         color: #fff; }
+    .btn-purple  { background: var(--purple);  color: #fff; }
+    .btn-green   { background: var(--green);   color: #fff; }
+    .btn-gray    { background: #374151;        color: #fff; }
+    .btn-red     { background: #b91c1c;        color: #fff; }
+    .btn-gold    { background: var(--gold);    color: #1c1000; }
     .btn-outline {
       background: transparent; color: var(--purple-lt);
       border: 1px solid var(--border);
     }
     .btn-outline:not(:disabled):hover { background: var(--surface); }
 
-    /* ── Inputs ──────────────────────────────────────── */
-    input[type=text], textarea {
+    /* ── Inputs ── */
+    input[type=text], textarea, select {
       background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: 0.55rem 0.75rem;
-      color: var(--text); font-size: 0.9rem; width: 100%;
-      font-family: inherit;
+      border-radius: 8px; padding: .55rem .75rem;
+      color: var(--text); font-size: .9rem; width: 100%; font-family: inherit;
     }
-    input[type=text]:focus, textarea:focus {
-      outline: none; border-color: var(--purple);
-    }
+    input[type=text]:focus, textarea:focus, select:focus { outline: none; border-color: var(--purple); }
     textarea { resize: vertical; min-height: 56px; line-height: 1.5; }
+    select option { background: #2d1a4e; }
 
-    /* ── Toast ───────────────────────────────────────── */
+    /* ── Toast ── */
     #toast {
       position: fixed; bottom: 1.5rem; right: 1.5rem;
       background: #1c3a2a; color: #86efac;
       border: 1px solid #166534; border-radius: 10px;
-      padding: 0.75rem 1.25rem; font-size: 0.9rem; font-weight: 600;
+      padding: .75rem 1.25rem; font-size: .9rem; font-weight: 600;
       opacity: 0; transform: translateY(8px);
-      transition: opacity 0.25s, transform 0.25s;
+      transition: opacity .25s, transform .25s;
       pointer-events: none; z-index: 100;
     }
     #toast.show { opacity: 1; transform: translateY(0); }
     #toast.error { background: #3a1c1c; color: #fca5a5; border-color: #7f1d1d; }
 
-    /* ════════════════════════════════════════════════════
-       ONGLET ÉDITEUR
-    ════════════════════════════════════════════════════ */
+    /* ════ ÉDITEUR ════ */
     .toolbar {
-      display: flex; gap: 0.5rem; flex-wrap: wrap;
+      display: flex; gap: .5rem; flex-wrap: wrap;
       align-items: center; margin-bottom: 1.5rem;
     }
     .toolbar-sep { flex: 1; }
 
-    /* Carte question */
     .q-card-edit {
       background: var(--surface); border-radius: 14px;
-      border: 1px solid var(--border);
-      margin-bottom: 1rem; overflow: hidden;
+      border: 1px solid var(--border); margin-bottom: 1rem; overflow: hidden;
     }
     .q-card-head {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 0.75rem 1rem; background: var(--surface2);
+      display: flex; align-items: center; gap: .75rem;
+      padding: .75rem 1rem; background: var(--surface2);
       cursor: pointer; user-select: none;
     }
     .q-card-head:hover { background: #4a2878; }
@@ -121,64 +104,66 @@
       width: 28px; height: 28px; border-radius: 50%;
       background: var(--purple); color: #fff;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+      font-size: .8rem; font-weight: 700; flex-shrink: 0;
     }
-    .q-card-title { flex: 1; font-size: 0.95rem; font-weight: 500; color: var(--text); }
+    .q-card-title { flex: 1; font-size: .95rem; font-weight: 500; }
     .q-card-title.placeholder { color: var(--faint); font-style: italic; }
-    .chevron {
-      font-size: 0.75rem; color: var(--muted);
-      transition: transform 0.2s;
-    }
+    .chevron { font-size: .75rem; color: var(--muted); transition: transform .2s; }
     .q-card-edit.collapsed .chevron { transform: rotate(-90deg); }
-    .q-card-body {
-      padding: 1rem;
-      display: flex; flex-direction: column; gap: 0.75rem;
-    }
+    .q-card-body { padding: 1rem; display: flex; flex-direction: column; gap: .9rem; }
     .q-card-edit.collapsed .q-card-body { display: none; }
 
     .field-label {
-      font-size: 0.75rem; font-weight: 600; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.06em;
-      margin-bottom: 0.3rem;
+      font-size: .72rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: .3rem;
     }
 
-    .options-grid { display: flex; flex-direction: column; gap: 0.4rem; }
-    .opt-row { display: flex; align-items: center; gap: 0.5rem; }
+    /* Options avec bouton "bonne réponse" */
+    .opt-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; }
     .opt-badge {
       width: 26px; height: 26px; border-radius: 50%;
       background: var(--surface2); color: var(--purple-lt);
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+      font-size: .75rem; font-weight: 700; flex-shrink: 0;
     }
+    .correct-btn {
+      width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
+      border: 1.5px solid var(--border); background: transparent;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; transition: background .15s, border-color .15s;
+      title: "Marquer comme bonne réponse";
+    }
+    .correct-btn.active { background: #14532d; border-color: #16a34a; }
+    .correct-btn:not(.active):hover { border-color: var(--purple); }
     .icon-btn {
-      background: none; border: none; cursor: pointer; padding: 0.2rem;
-      color: var(--faint); font-size: 1rem; line-height: 1;
-      transition: color 0.15s; flex-shrink: 0;
+      background: none; border: none; cursor: pointer; padding: .2rem;
+      color: var(--faint); font-size: 1rem; transition: color .15s; flex-shrink: 0;
     }
     .icon-btn:hover { color: #ef4444; }
     .add-opt-btn {
-      background: none; border: 1px dashed var(--border);
-      color: var(--muted); border-radius: 7px;
-      padding: 0.3rem 0.75rem; font-size: 0.82rem;
-      cursor: pointer; width: 100%; margin-top: 0.2rem;
-      transition: border-color 0.15s, color 0.15s;
+      background: none; border: 1px dashed var(--border); color: var(--muted);
+      border-radius: 7px; padding: .3rem .75rem; font-size: .82rem;
+      cursor: pointer; width: 100%; margin-top: .2rem;
+      transition: border-color .15s, color .15s;
     }
     .add-opt-btn:hover { border-color: var(--purple); color: var(--purple-lt); }
 
+    .correct-hint {
+      font-size: .78rem; color: #4ade80; margin-top: .1rem;
+      display: flex; align-items: center; gap: .3rem;
+    }
+
     .q-card-footer {
-      display: flex; gap: 0.5rem; justify-content: flex-end;
-      padding-top: 0.5rem; border-top: 1px solid var(--border);
+      display: flex; gap: .5rem; justify-content: flex-end;
+      padding-top: .6rem; border-top: 1px solid var(--border);
     }
 
-    .empty-state {
-      text-align: center; padding: 3rem 1rem; color: var(--faint);
-    }
-    .empty-state .big { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--faint); }
+    .empty-state .big { font-size: 2.5rem; margin-bottom: .75rem; }
 
-    /* Import JSON modal overlay */
+    /* Modal import */
     .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7);
+      position: fixed; inset: 0; background: rgba(0,0,0,.7);
       display: flex; align-items: center; justify-content: center;
       z-index: 50; padding: 1rem;
     }
@@ -188,38 +173,37 @@
       border: 1px solid var(--border);
       padding: 1.5rem; width: 100%; max-width: 560px;
     }
-    .modal h3 { font-size: 1rem; font-weight: 600; color: var(--purple-lt); margin-bottom: 0.5rem; }
-    .modal p  { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem; line-height: 1.5; }
-    .modal textarea { font-family: monospace; font-size: 0.82rem; min-height: 180px; }
-    .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+    .modal h3 { font-size: 1rem; font-weight: 600; color: var(--purple-lt); margin-bottom: .5rem; }
+    .modal p  { font-size: .85rem; color: var(--muted); margin-bottom: .75rem; line-height: 1.5; }
+    .modal textarea { font-family: monospace; font-size: .82rem; min-height: 180px; }
+    .modal-actions { display: flex; gap: .5rem; justify-content: flex-end; margin-top: 1rem; }
 
-    /* ════════════════════════════════════════════════════
-       ONGLET DASHBOARD
-    ════════════════════════════════════════════════════ */
+    /* ════ DASHBOARD ════ */
     .dash-header {
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;
     }
     .status-pill {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.4rem 1rem; border-radius: 999px;
-      font-size: 0.85rem; font-weight: 600;
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .4rem 1rem; border-radius: 999px;
+      font-size: .85rem; font-weight: 600;
     }
     .pill-waiting { background: #3d2060; color: #c4a0e8; }
     .pill-live    { background: #14532d; color: #86efac; }
     .pill-done    { background: #1e3a5f; color: #93c5fd; }
+    .pill-podium  { background: #5c3a00; color: #fde68a; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
     .dot.blink { animation: blink 1s infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
 
-    .controls { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .controls { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
 
-    .q-nav { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .q-nav { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
     .q-nav-btn {
       width: 34px; height: 34px; border-radius: 50%;
       border: 2px solid var(--border); background: transparent;
       color: var(--muted); font-weight: 600; cursor: pointer;
-      transition: all 0.15s; font-size: 0.82rem;
+      transition: all .15s; font-size: .82rem;
     }
     .q-nav-btn.active { background: var(--purple); border-color: var(--purple); color: #fff; }
     .q-nav-btn:hover:not(.active) { border-color: var(--purple); color: var(--purple-lt); }
@@ -229,70 +213,85 @@
       border: 1px solid var(--border);
       padding: 1.25rem; margin-bottom: 1rem;
     }
-    .result-card.is-live { border-color: #16a34a; }
-    .r-label {
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem;
+    .result-card.is-live { border-color: var(--green); }
+    .r-label { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .35rem; }
+    .live-badge-sm {
+      display: inline-block; font-size: .68rem; font-weight: 700;
+      background: #14532d; color: #86efac; padding: .1rem .45rem;
+      border-radius: 999px; margin-left: .4rem; vertical-align: middle;
     }
-    .live-badge {
-      display: inline-block; font-size: 0.68rem; font-weight: 700;
-      background: #14532d; color: #86efac; padding: 0.1rem 0.45rem;
-      border-radius: 999px; margin-left: 0.4rem; vertical-align: middle;
+    .r-text { font-size: 1.05rem; font-weight: 600; margin-bottom: 1rem; line-height: 1.4; }
+    .r-rows { display: flex; flex-direction: column; gap: .55rem; }
+    .r-row  { display: flex; flex-direction: column; gap: .2rem; }
+    .r-top  { display: flex; justify-content: space-between; align-items: center; }
+    .r-opt  { font-size: .9rem; color: #e2d9f0; display: flex; align-items: center; gap: .4rem; }
+    .r-correct-tag {
+      font-size: .68rem; font-weight: 700; background: #14532d;
+      color: #86efac; padding: .1rem .4rem; border-radius: 4px;
     }
-    .r-text { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; line-height: 1.4; }
-    .r-rows { display: flex; flex-direction: column; gap: 0.6rem; }
-    .r-row { display: flex; flex-direction: column; gap: 0.2rem; }
-    .r-top { display: flex; justify-content: space-between; align-items: baseline; }
-    .r-opt { font-size: 0.9rem; color: #e2d9f0; }
-    .r-pct { font-size: 0.95rem; font-weight: 700; color: var(--purple-lt); }
-    .r-cnt { font-size: 0.78rem; color: var(--faint); margin-left: 0.25rem; }
+    .r-pct  { font-size: .92rem; font-weight: 700; color: var(--purple-lt); }
+    .r-cnt  { font-size: .78rem; color: var(--faint); margin-left: .2rem; }
     .bar-wrap { height: 8px; background: var(--surface2); border-radius: 4px; }
     .bar-fill {
       height: 100%; border-radius: 4px;
       background: linear-gradient(90deg, var(--purple), var(--purple-lt));
-      transition: width 0.45s ease;
+      transition: width .45s ease;
     }
-    .r-footer { margin-top: 0.75rem; font-size: 0.8rem; color: var(--faint); text-align: right; }
+    .bar-fill.correct-bar { background: linear-gradient(90deg, #16a34a, #4ade80); }
+    .r-footer { margin-top: .75rem; font-size: .8rem; color: var(--faint); text-align: right; }
 
-    .dash-empty {
-      text-align: center; padding: 3rem 1rem; color: var(--faint);
+    /* ── Encart classement live ── */
+    .ranking-panel {
+      background: var(--surface); border-radius: 14px;
+      border: 1px solid var(--border); padding: 1.25rem;
+      margin-bottom: 1.5rem;
     }
+    .ranking-panel-title {
+      font-size: .75rem; font-weight: 700; color: var(--gold);
+      text-transform: uppercase; letter-spacing: .08em; margin-bottom: .75rem;
+    }
+    .mini-rank-list { display: flex; flex-direction: column; gap: .4rem; }
+    .mini-rank-row {
+      display: flex; align-items: center; gap: .6rem;
+      padding: .45rem .75rem; background: rgba(255,255,255,.04);
+      border-radius: 8px;
+    }
+    .mini-rank-pos { width: 22px; font-size: .82rem; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+    .mini-rank-pos.gold   { color: var(--gold); }
+    .mini-rank-pos.silver { color: #94a3b8; }
+    .mini-rank-pos.bronze { color: #b45309; }
+    .mini-rank-name { flex: 1; font-size: .9rem; }
+    .mini-rank-score { font-size: .9rem; font-weight: 700; color: var(--purple-lt); }
+
+    .dash-empty { text-align: center; padding: 3rem 1rem; color: var(--faint); }
   </style>
 </head>
 <body>
 
-<!-- ── Onglets ─────────────────────────────────────────────── -->
 <nav class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('editor')">✏️ Éditeur de questions</button>
-  <button class="tab-btn"        onclick="switchTab('dashboard')">📊 Dashboard quiz</button>
+  <button class="tab-btn active" onclick="switchTab('editor')">✏️ Questions</button>
+  <button class="tab-btn"        onclick="switchTab('dashboard')">📊 Dashboard</button>
 </nav>
 
-<!-- ════════════════════════════════════════════════════════════
-     ONGLET 1 : ÉDITEUR
-════════════════════════════════════════════════════════════ -->
+<!-- ════ ÉDITEUR ════ -->
 <div id="tab-editor" class="tab-pane active">
-
   <div class="toolbar">
-    <button class="btn btn-purple" onclick="addQuestion()">＋ Ajouter une question</button>
+    <button class="btn btn-purple"  onclick="addQuestion()">＋ Ajouter une question</button>
     <button class="btn btn-outline" onclick="exportJSON()">⬇ Exporter JSON</button>
     <button class="btn btn-outline" onclick="openImport()">⬆ Importer JSON</button>
     <div class="toolbar-sep"></div>
-    <button class="btn btn-green" onclick="saveToSupabase()">💾 Enregistrer dans Supabase</button>
+    <button class="btn btn-green"   onclick="saveToSupabase()">💾 Enregistrer dans Supabase</button>
   </div>
-
   <div id="editor-list"></div>
-
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
-     ONGLET 2 : DASHBOARD
-════════════════════════════════════════════════════════════ -->
+<!-- ════ DASHBOARD ════ -->
 <div id="tab-dashboard" class="tab-pane">
 
   <div class="dash-header">
     <div>
       <div style="font-size:1.2rem;font-weight:600">💍 Quiz en direct</div>
-      <div style="font-size:0.85rem;color:var(--muted);margin-top:0.2rem">Résultats mis à jour en temps réel</div>
+      <div style="font-size:.85rem;color:var(--muted);margin-top:.2rem">Résultats mis à jour en temps réel</div>
     </div>
     <span id="status-pill" class="status-pill pill-waiting">
       <span class="dot"></span>
@@ -301,71 +300,62 @@
   </div>
 
   <div class="controls">
-    <button class="btn btn-green"  id="btn-start" onclick="startQuiz()">▶ Lancer le quiz</button>
-    <button class="btn btn-purple" id="btn-next"  onclick="nextQuestion()" disabled>⏭ Question suivante</button>
-    <button class="btn btn-red"    id="btn-end"   onclick="endQuiz()"      disabled>⏹ Terminer</button>
-    <button class="btn btn-gray"   id="btn-reset" onclick="resetQuiz()">🔄 Réinitialiser les votes</button>
+    <button class="btn btn-green"   id="btn-start"  onclick="startQuiz()">▶ Lancer</button>
+    <button class="btn btn-purple"  id="btn-next"   onclick="nextQuestion()" disabled>⏭ Suivante</button>
+    <button class="btn btn-red"     id="btn-end"    onclick="endQuiz()"      disabled>⏹ Terminer</button>
+    <button class="btn btn-gold"    id="btn-podium" onclick="showPodium()"   disabled>🏆 Afficher le podium</button>
+    <button class="btn btn-gray"    id="btn-reset"  onclick="resetQuiz()">🔄 Reset</button>
+  </div>
+
+  <!-- Classement live -->
+  <div class="ranking-panel">
+    <div class="ranking-panel-title">🏆 Classement en cours</div>
+    <div class="mini-rank-list" id="mini-ranking">
+      <div style="color:var(--faint);font-size:.88rem">Aucun participant pour l'instant…</div>
+    </div>
   </div>
 
   <div class="q-nav" id="q-nav"></div>
-  <div id="results-container">
-    <div class="dash-empty">Chargement…</div>
-  </div>
+  <div id="results-container"><div class="dash-empty">Chargement…</div></div>
 
 </div>
 
-<!-- ── Modal import JSON ───────────────────────────────────── -->
+<!-- Modal import -->
 <div id="import-modal" class="modal-overlay hidden">
   <div class="modal">
-    <h3>⬆ Importer un fichier JSON</h3>
-    <p>
-      Collez ici un JSON exporté depuis cet outil, ou construisez-en un manuellement.<br>
-      Format attendu :
-      <code style="color:#c084fc">[{"text":"Question ?","options":["A","B","C"]}, …]</code>
-    </p>
-    <textarea id="import-textarea" placeholder='[{"text": "Où se sont-ils rencontrés ?", "options": ["À l\'école", "Au travail", "En vacances"]}]'></textarea>
+    <h3>⬆ Importer un JSON</h3>
+    <p>Format attendu : <code style="color:#c084fc">[{"text":"…","options":["A","B","C"],"correct_answer_index":0}, …]</code></p>
+    <textarea id="import-textarea" placeholder='[{"text":"Où se sont-ils rencontrés ?","options":["À l'\''école","Au travail","En vacances"],"correct_answer_index":1}]'></textarea>
     <div class="modal-actions">
-      <button class="btn btn-gray" onclick="closeImport()">Annuler</button>
+      <button class="btn btn-gray"   onclick="closeImport()">Annuler</button>
       <button class="btn btn-purple" onclick="doImport()">Importer</button>
     </div>
   </div>
 </div>
 
-<!-- ── Toast ──────────────────────────────────────────────── -->
 <div id="toast"></div>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-// ================================================================
-// 🔧 CONFIGURATION SUPABASE — identique à index.html
-// ================================================================
-const SUPABASE_URL  = "https://wnovazgofdfbhqivokbx.supabase.co";
-const SUPABASE_ANON = "sb_publishable_EB6_xTYduYkOBifywzM9Aw_1_of-xGW";
-// ================================================================
+import { SUPABASE_URL, SUPABASE_ANON } from "./config.js";
 
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+const LETTERS = ["A","B","C","D","E","F"];
 
-// ── État global ─────────────────────────────────────────────────
-let questions  = [];   // [{id?, text, options:[], position}]
-let currentIdx = -1;
-let voteCounts = {};   // { questionId: { optionIdx: count } }
-const LETTERS  = ["A","B","C","D","E","F"];
+let questions   = [];
+let currentIdx  = -1;
+let voteCounts  = {};
+const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 
-// ════════════════════════════════════════════════════════════════
-// ONGLETS
-// ════════════════════════════════════════════════════════════════
-window.switchTab = (name) => {
-  document.querySelectorAll(".tab-btn").forEach((b, i) => {
-    b.classList.toggle("active", ["editor","dashboard"][i] === name);
-  });
+// ════════ ONGLETS ════════
+window.switchTab = name => {
+  document.querySelectorAll(".tab-btn").forEach((b,i) =>
+    b.classList.toggle("active", ["editor","dashboard"][i] === name));
   document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
   document.getElementById("tab-" + name).classList.add("active");
 };
 
-// ════════════════════════════════════════════════════════════════
-// TOAST
-// ════════════════════════════════════════════════════════════════
+// ════════ TOAST ════════
 let toastTimer;
 function toast(msg, isError = false) {
   const el = document.getElementById("toast");
@@ -375,82 +365,80 @@ function toast(msg, isError = false) {
   toastTimer = setTimeout(() => el.className = "", 3000);
 }
 
-// ════════════════════════════════════════════════════════════════
-// ÉDITEUR
-// ════════════════════════════════════════════════════════════════
-
-// Lit les valeurs actuelles du DOM et les écrit dans questions[].
-// À appeler AVANT toute opération qui modifie ou relit questions[].
+// ════════ SYNC DOM → questions[] ════════
 function syncFromDOM() {
   questions.forEach((q, i) => {
     const ta = document.getElementById(`qtxt-${i}`);
     if (ta) q.text = ta.value;
     q.options.forEach((_, j) => {
-      const inp = document.querySelector(`#opts-${i} .opt-row:nth-child(${j+1}) input`);
+      const inp = document.querySelector(`#opts-${i} .opt-row:nth-child(${j+1}) input[type=text]`);
       if (inp) q.options[j] = inp.value;
     });
   });
 }
 
+// ════════ ÉDITEUR ════════
 window.addQuestion = () => {
   syncFromDOM();
-  questions.push({ text: "", options: ["", ""], position: questions.length });
+  questions.push({ text: "", options: ["", ""], correct_answer_index: 0, position: questions.length });
   renderEditor();
   setTimeout(() => {
-    const cards = document.querySelectorAll(".q-card-edit");
-    cards[cards.length - 1]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.querySelectorAll(".q-card-edit").at(-1)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, 50);
 };
 
 window.removeQuestion = i => {
   if (!confirm(`Supprimer la question ${i+1} ?`)) return;
-  syncFromDOM();
-  questions.splice(i, 1);
-  renderEditor();
+  syncFromDOM(); questions.splice(i, 1); renderEditor();
 };
 
 window.addOption = i => {
   if (questions[i].options.length >= 6) return;
-  syncFromDOM();
-  questions[i].options.push("");
-  renderEditor();
+  syncFromDOM(); questions[i].options.push(""); renderEditor();
 };
 
 window.removeOption = (qi, oi) => {
   if (questions[qi].options.length <= 2) return;
   syncFromDOM();
   questions[qi].options.splice(oi, 1);
+  // Ajuster correct_answer_index si nécessaire
+  if (questions[qi].correct_answer_index >= questions[qi].options.length)
+    questions[qi].correct_answer_index = questions[qi].options.length - 1;
   renderEditor();
 };
 
-window.toggleCard = i => {
-  document.getElementById(`qcard-${i}`).classList.toggle("collapsed");
-};
-
-window.moveUp = i => {
-  if (i === 0) return;
+window.setCorrect = (qi, oi) => {
   syncFromDOM();
-  [questions[i-1], questions[i]] = [questions[i], questions[i-1]];
-  renderEditor();
-};
-window.moveDown = i => {
-  if (i >= questions.length - 1) return;
-  syncFromDOM();
-  [questions[i], questions[i+1]] = [questions[i+1], questions[i]];
-  renderEditor();
+  questions[qi].correct_answer_index = oi;
+  // Mettre à jour visuellement sans re-render complet
+  const card = document.getElementById(`qcard-${qi}`);
+  card.querySelectorAll(".correct-btn").forEach((btn, j) => {
+    btn.classList.toggle("active", j === oi);
+    btn.title = j === oi ? "✅ Bonne réponse" : "Marquer comme bonne réponse";
+  });
+  const hint = document.getElementById(`correct-hint-${qi}`);
+  if (hint) hint.textContent = `✅ Bonne réponse : ${LETTERS[oi]}`;
 };
 
-function renderEditor(focusIdx = null) {
+window.toggleCard = i => document.getElementById(`qcard-${i}`).classList.toggle("collapsed");
+window.moveUp     = i => { if (!i) return; syncFromDOM(); [questions[i-1],questions[i]]=[questions[i],questions[i-1]]; renderEditor(); };
+window.moveDown   = i => { if (i>=questions.length-1) return; syncFromDOM(); [questions[i],questions[i+1]]=[questions[i+1],questions[i]]; renderEditor(); };
+
+window.updateCardTitle = i => {
+  const el = document.querySelector(`#qcard-${i} .q-card-title`);
+  if (!el) return;
+  const txt = questions[i].text.trim();
+  el.textContent = txt || "Nouvelle question…";
+  el.className = "q-card-title" + (txt ? "" : " placeholder");
+};
+
+function renderEditor() {
   const list = document.getElementById("editor-list");
-
-  if (questions.length === 0) {
-    list.innerHTML = `<div class="empty-state">
-      <div class="big">✏️</div>
-      <p>Aucune question pour l'instant.<br>Cliquez sur <strong>＋ Ajouter une question</strong> pour commencer.</p>
-    </div>`;
+  if (!questions.length) {
+    list.innerHTML = `<div class="empty-state"><div class="big">✏️</div>
+      <p>Aucune question.<br>Cliquez sur <strong>＋ Ajouter une question</strong>.</p></div>`;
     return;
   }
-
   list.innerHTML = questions.map((q, i) => {
     const hasTitle = q.text.trim().length > 0;
     return `
@@ -458,41 +446,47 @@ function renderEditor(focusIdx = null) {
       <div class="q-card-head" onclick="toggleCard(${i})">
         <div class="q-num-badge">${i+1}</div>
         <div class="q-card-title ${hasTitle ? "" : "placeholder"}">
-          ${hasTitle ? esc(q.text) : "Nouvelle question…"}
-        </div>
+          ${hasTitle ? esc(q.text) : "Nouvelle question…"}</div>
         <span class="chevron">▼</span>
       </div>
       <div class="q-card-body">
         <div>
           <div class="field-label">Question</div>
           <textarea id="qtxt-${i}" placeholder="Ex : Où se sont-ils rencontrés ?"
-            oninput="questions[${i}].text=this.value; updateCardTitle(${i})"
+            oninput="questions[${i}].text=this.value;updateCardTitle(${i})"
           >${esc(q.text)}</textarea>
         </div>
         <div>
-          <div class="field-label">Réponses possibles (2 à 6)</div>
-          <div class="options-grid" id="opts-${i}">
+          <div class="field-label">
+            Réponses — cliquez sur ✓ pour marquer la bonne réponse
+          </div>
+          <div id="opts-${i}">
             ${q.options.map((o, j) => `
               <div class="opt-row">
                 <div class="opt-badge">${LETTERS[j]}</div>
                 <input type="text" value="${esc(o)}"
                   placeholder="Réponse ${LETTERS[j]}…"
                   oninput="questions[${i}].options[${j}]=this.value" />
+                <button class="correct-btn ${q.correct_answer_index===j ? "active":""}"
+                  onclick="setCorrect(${i},${j})"
+                  title="${q.correct_answer_index===j ? "✅ Bonne réponse" : "Marquer comme bonne réponse"}">✓</button>
                 ${q.options.length > 2
-                  ? `<button class="icon-btn" onclick="removeOption(${i},${j})" title="Supprimer cette réponse">✕</button>`
+                  ? `<button class="icon-btn" onclick="removeOption(${i},${j})">✕</button>`
                   : '<div style="width:26px"></div>'}
               </div>`).join("")}
           </div>
+          <div class="correct-hint" id="correct-hint-${i}">
+            ✅ Bonne réponse : ${LETTERS[q.correct_answer_index]}
+          </div>
           ${q.options.length < 6
-            ? `<button class="add-opt-btn" onclick="addOption(${i})">＋ Ajouter une réponse</button>`
-            : ""}
+            ? `<button class="add-opt-btn" onclick="addOption(${i})">＋ Ajouter une réponse</button>` : ""}
         </div>
         <div class="q-card-footer">
-          <button class="btn btn-gray" style="padding:0.35rem 0.7rem;font-size:0.8rem"
-            onclick="moveUp(${i})" ${i === 0 ? "disabled" : ""}>↑</button>
-          <button class="btn btn-gray" style="padding:0.35rem 0.7rem;font-size:0.8rem"
-            onclick="moveDown(${i})" ${i === questions.length-1 ? "disabled" : ""}>↓</button>
-          <button class="btn btn-red" style="padding:0.35rem 0.7rem;font-size:0.8rem"
+          <button class="btn btn-gray" style="padding:.35rem .7rem;font-size:.8rem"
+            onclick="moveUp(${i})" ${!i?"disabled":""}>↑</button>
+          <button class="btn btn-gray" style="padding:.35rem .7rem;font-size:.8rem"
+            onclick="moveDown(${i})" ${i===questions.length-1?"disabled":""}>↓</button>
+          <button class="btn btn-red"  style="padding:.35rem .7rem;font-size:.8rem"
             onclick="removeQuestion(${i})">🗑 Supprimer</button>
         </div>
       </div>
@@ -500,194 +494,202 @@ function renderEditor(focusIdx = null) {
   }).join("");
 }
 
-window.updateCardTitle = i => {
-  const titleEl = document.querySelector(`#qcard-${i} .q-card-title`);
-  if (!titleEl) return;
-  const txt = questions[i].text.trim();
-  titleEl.textContent = txt || "Nouvelle question…";
-  titleEl.className   = "q-card-title" + (txt ? "" : " placeholder");
-};
-
-// ── Export JSON ──────────────────────────────────────────────────
+// ── Export ──
 window.exportJSON = () => {
-  if (questions.length === 0) { toast("Aucune question à exporter", true); return; }
+  if (!questions.length) { toast("Aucune question à exporter", true); return; }
   syncFromDOM();
-  const data = questions.map(q => ({ text: q.text, options: q.options }));
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "quiz-mariage.json";
+  const data = questions.map(q => ({ text: q.text, options: q.options, correct_answer_index: q.correct_answer_index }));
+  const a = Object.assign(document.createElement("a"), {
+    href: URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"})),
+    download: "quiz-mariage.json"
+  });
   a.click();
   toast("JSON exporté !");
 };
 
-// ── Import JSON ──────────────────────────────────────────────────
+// ── Import ──
 window.openImport  = () => document.getElementById("import-modal").classList.remove("hidden");
 window.closeImport = () => document.getElementById("import-modal").classList.add("hidden");
-
-window.doImport = () => {
+window.doImport    = () => {
   const raw = document.getElementById("import-textarea").value.trim();
   try {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) throw new Error("Doit être un tableau JSON");
-    parsed.forEach((q, i) => {
-      if (typeof q.text !== "string") throw new Error(`Q${i+1} : champ "text" manquant`);
-      if (!Array.isArray(q.options) || q.options.length < 2) throw new Error(`Q${i+1} : "options" doit avoir au moins 2 éléments`);
+    parsed.forEach((q,i) => {
+      if (typeof q.text !== "string") throw new Error(`Q${i+1} : "text" manquant`);
+      if (!Array.isArray(q.options) || q.options.length < 2) throw new Error(`Q${i+1} : "options" doit avoir ≥ 2 éléments`);
     });
-    if (questions.length > 0) { syncFromDOM(); if (!confirm("Remplacer les questions actuelles par celles du JSON ?")) return; }
-    questions = parsed.map((q, i) => ({ text: q.text, options: q.options, position: i }));
-    renderEditor();
-    closeImport();
+    if (questions.length && !confirm("Remplacer les questions actuelles ?")) return;
+    questions = parsed.map((q,i) => ({
+      text: q.text, options: q.options,
+      correct_answer_index: q.correct_answer_index ?? 0,
+      position: i
+    }));
+    renderEditor(); closeImport();
     document.getElementById("import-textarea").value = "";
     toast(`${questions.length} question(s) importée(s) ✓`);
-  } catch(e) {
-    toast("JSON invalide : " + e.message, true);
-  }
+  } catch(e) { toast("JSON invalide : " + e.message, true); }
 };
 
-// ── Sauvegarde Supabase ──────────────────────────────────────────
+// ── Save Supabase ──
 window.saveToSupabase = async () => {
-  if (questions.length === 0) { toast("Aucune question à enregistrer", true); return; }
-
-  // Synchroniser le DOM → tableau avant de valider
+  if (!questions.length) { toast("Aucune question à enregistrer", true); return; }
   syncFromDOM();
-
-  // Validation
   for (let i = 0; i < questions.length; i++) {
-    if (!questions[i].text.trim()) { toast(`Q${i+1} : le texte est vide`, true); return; }
-    const empties = questions[i].options.filter(o => !o.trim());
-    if (empties.length) { toast(`Q${i+1} : certaines réponses sont vides`, true); return; }
+    if (!questions[i].text.trim())              { toast(`Q${i+1} : texte vide`, true); return; }
+    if (questions[i].options.some(o=>!o.trim())) { toast(`Q${i+1} : réponse vide`, true); return; }
   }
-
   const btn = document.querySelector("button[onclick='saveToSupabase()']");
   btn.disabled = true; btn.textContent = "Enregistrement…";
 
-  // Supprimer toutes les questions existantes
-  const { error: delErr } = await sb.from("quiz_questions").delete().neq("id", 0);
-  if (delErr) { toast("Erreur suppression : " + delErr.message, true); btn.disabled = false; btn.innerHTML = "💾 Enregistrer dans Supabase"; return; }
-
-  // Réinsérer
-  const rows = questions.map((q, i) => ({ text: q.text, options: q.options, position: i }));
-  const { data, error: insErr } = await sb.from("quiz_questions").insert(rows).select();
-  if (insErr) { toast("Erreur insertion : " + insErr.message, true); btn.disabled = false; btn.innerHTML = "💾 Enregistrer dans Supabase"; return; }
-
-  // Mettre à jour les IDs locaux
-  questions = (data || []).sort((a, b) => a.position - b.position);
-  renderEditor();
-  renderNav();
-  renderResults();
-
+  await sb.from("quiz_questions").delete().neq("id", 0);
+  const rows = questions.map((q,i) => ({
+    text: q.text, options: q.options,
+    correct_answer_index: q.correct_answer_index,
+    position: i
+  }));
+  const { data, error } = await sb.from("quiz_questions").insert(rows).select();
   btn.disabled = false; btn.innerHTML = "💾 Enregistrer dans Supabase";
-  toast(`${questions.length} question(s) enregistrée(s) dans Supabase ✓`);
+
+  if (error) { toast("Erreur : " + error.message, true); return; }
+  questions = (data||[]).sort((a,b) => a.position - b.position);
+  renderEditor(); renderNav(); renderResults();
+  toast(`${questions.length} question(s) enregistrée(s) ✓`);
 };
 
-// ════════════════════════════════════════════════════════════════
-// DASHBOARD
-// ════════════════════════════════════════════════════════════════
+// ════════ DASHBOARD ════════
 async function setQuizState(status, idx) {
   const { error } = await sb.from("quiz_state")
     .update({ status, current_question_index: idx }).eq("id", 1);
   if (error) toast("Erreur Supabase : " + error.message, true);
 }
 
-window.startQuiz = async () => {
-  if (questions.length === 0) { toast("Enregistrez d'abord les questions dans Supabase", true); return; }
-  currentIdx = 0;
-  await setQuizState("question", 0);
+window.startQuiz    = () => { if (!questions.length) { toast("Enregistrez d'abord les questions", true); return; } currentIdx=0; setQuizState("question",0); };
+window.nextQuestion = () => { currentIdx++; if (currentIdx>=questions.length) setQuizState("done",currentIdx); else setQuizState("question",currentIdx); };
+window.endQuiz      = () => setQuizState("done", currentIdx);
+window.showPodium   = () => setQuizState("podium", currentIdx);
+window.resetQuiz    = async () => {
+  if (!confirm("Réinitialiser TOUS les votes et scores ?")) return;
+  await sb.from("quiz_votes").delete().neq("id",0);
+  await sb.from("quiz_players").delete().neq("id",0);
+  await setQuizState("waiting",-1);
+  currentIdx=-1; voteCounts={};
+  renderNav(); renderResults(); refreshMiniRanking();
+  toast("Quiz réinitialisé");
 };
 
-window.nextQuestion = async () => {
-  currentIdx++;
-  if (currentIdx >= questions.length) await setQuizState("done", currentIdx);
-  else await setQuizState("question", currentIdx);
-};
-
-window.endQuiz = () => setQuizState("done", currentIdx);
-
-window.resetQuiz = async () => {
-  if (!confirm("Réinitialiser TOUS les votes ? Cette action est irréversible.")) return;
-  await sb.from("quiz_votes").delete().neq("id", 0);
-  await setQuizState("waiting", -1);
-  currentIdx = -1; voteCounts = {};
-  renderNav(); renderResults();
-  toast("Votes réinitialisés");
-};
-
-// ── Realtime état ────────────────────────────────────────────────
+// ── Realtime état ──
 sb.channel("admin_state")
   .on("postgres_changes",
-    { event: "UPDATE", schema: "public", table: "quiz_state", filter: "id=eq.1" },
+    { event:"UPDATE", schema:"public", table:"quiz_state", filter:"id=eq.1" },
     p => applyState(p.new))
   .subscribe();
 
 function applyState(state) {
   currentIdx = state.current_question_index ?? -1;
+  const s    = state.status;
   const pill = document.getElementById("status-pill");
   const txt  = document.getElementById("status-text");
-  const bs   = document.getElementById("btn-start");
-  const bn   = document.getElementById("btn-next");
-  const be   = document.getElementById("btn-end");
+  const bs = document.getElementById("btn-start");
+  const bn = document.getElementById("btn-next");
+  const be = document.getElementById("btn-end");
+  const bp = document.getElementById("btn-podium");
 
-  if (state.status === "waiting") {
-    pill.className = "status-pill pill-waiting"; txt.textContent = "En attente";
-    pill.querySelector(".dot").classList.remove("blink");
-    bs.disabled = false; bn.disabled = true; be.disabled = true;
-  } else if (state.status === "question") {
-    pill.className = "status-pill pill-live"; txt.textContent = `Q${currentIdx+1} en cours`;
-    pill.querySelector(".dot").classList.add("blink");
-    bs.disabled = true; bn.disabled = false; be.disabled = false;
-  } else if (state.status === "done") {
-    pill.className = "status-pill pill-done"; txt.textContent = "Terminé";
-    pill.querySelector(".dot").classList.remove("blink");
-    bs.disabled = true; bn.disabled = true; be.disabled = true;
-  }
+  const cfg = {
+    waiting: { cls:"pill-waiting", label:"En attente",   blink:false, start:false, next:true, end:true, pod:true },
+    question:{ cls:"pill-live",    label:`Q${currentIdx+1} en cours`, blink:true, start:true, next:false, end:false, pod:true },
+    done:    { cls:"pill-done",    label:"Terminé",       blink:false, start:true, next:true, end:true, pod:false },
+    podium:  { cls:"pill-podium",  label:"Podium 🏆",    blink:true,  start:true, next:true, end:true, pod:true },
+  };
+  const c = cfg[s] || cfg.waiting;
+  pill.className = "status-pill " + c.cls;
+  txt.textContent = c.label;
+  pill.querySelector(".dot").classList.toggle("blink", c.blink);
+  bs.disabled = c.start; bn.disabled = c.next; be.disabled = c.end; bp.disabled = c.pod;
+
   renderNav(); renderResults();
 }
 
-// ── Realtime votes ───────────────────────────────────────────────
+// ── Realtime votes ──
 sb.channel("admin_votes")
   .on("postgres_changes",
-    { event: "INSERT", schema: "public", table: "quiz_votes" },
+    { event:"INSERT", schema:"public", table:"quiz_votes" },
     p => {
       const { question_id, answer_index } = p.new;
       if (!voteCounts[question_id]) voteCounts[question_id] = {};
-      voteCounts[question_id][answer_index] = (voteCounts[question_id][answer_index] || 0) + 1;
+      voteCounts[question_id][answer_index] = (voteCounts[question_id][answer_index]||0)+1;
       refreshCard(question_id);
     })
   .subscribe();
 
-// ── Rendu dashboard ──────────────────────────────────────────────
+// ── Realtime scores ──
+sb.channel("admin_players")
+  .on("postgres_changes",
+    { event:"*", schema:"public", table:"quiz_players" },
+    () => refreshMiniRanking())
+  .subscribe();
+
+// ── Classement mini ──
+async function refreshMiniRanking() {
+  const { data } = await sb.from("quiz_players")
+    .select("username,score")
+    .order("score",{ascending:false})
+    .order("created_at",{ascending:true})
+    .limit(10);
+
+  const posClass = ["gold","silver","bronze"];
+  const medals   = ["🥇","🥈","🥉"];
+  const el = document.getElementById("mini-ranking");
+  if (!data || !data.length) {
+    el.innerHTML = `<div style="color:var(--faint);font-size:.88rem">Aucun participant pour l'instant…</div>`;
+    return;
+  }
+  el.innerHTML = data.map((p,i) => `
+    <div class="mini-rank-row">
+      <div class="mini-rank-pos ${posClass[i]||""}">${i<3?medals[i]:i+1}</div>
+      <div class="mini-rank-name">${esc(p.username)}</div>
+      <div class="mini-rank-score">${p.score} pt${p.score!==1?"s":""}</div>
+    </div>`).join("");
+}
+
+// ── Résultats ──
 function renderNav() {
-  document.getElementById("q-nav").innerHTML = questions.map((_, i) =>
-    `<button class="q-nav-btn ${i === currentIdx ? "active" : ""}"
+  document.getElementById("q-nav").innerHTML = questions.map((_,i) =>
+    `<button class="q-nav-btn ${i===currentIdx?"active":""}"
       onclick="document.getElementById('rc-${i}')?.scrollIntoView({behavior:'smooth'})">${i+1}</button>`
   ).join("");
 }
 
 function renderResults() {
   const c = document.getElementById("results-container");
-  if (questions.length === 0) {
-    c.innerHTML = `<div class="dash-empty">Aucune question enregistrée.<br>Allez dans l'onglet <strong>Éditeur</strong> pour en créer.</div>`;
+  if (!questions.length) {
+    c.innerHTML = `<div class="dash-empty">Aucune question enregistrée.<br>Allez dans <strong>✏️ Questions</strong>.</div>`;
     return;
   }
-  c.innerHTML = questions.map((q, i) => `
-    <div class="result-card ${i === currentIdx ? "is-live" : ""}" id="rc-${i}">
+  c.innerHTML = questions.map((q,i) => `
+    <div class="result-card ${i===currentIdx?"is-live":""}" id="rc-${i}">
       <div class="r-label">
         Question ${i+1}
-        ${i === currentIdx ? '<span class="live-badge">EN COURS</span>' : ""}
+        ${i===currentIdx?'<span class="live-badge-sm">EN COURS</span>':""}
       </div>
-      <div class="r-text">${q.text || "(sans titre)"}</div>
+      <div class="r-text">${esc(q.text)||"(sans titre)"}</div>
       <div class="r-rows">
-        ${(q.options||[]).map((o, j) => `
+        ${(q.options||[]).map((o,j) => `
           <div class="r-row">
             <div class="r-top">
-              <span class="r-opt">${LETTERS[j]}. ${esc(o)}</span>
+              <span class="r-opt">
+                ${LETTERS[j]}. ${esc(o)}
+                ${j===q.correct_answer_index?'<span class="r-correct-tag">✓ bonne réponse</span>':""}
+              </span>
               <span>
                 <span class="r-pct" id="pct-${q.id}-${j}">0%</span>
                 <span class="r-cnt" id="cnt-${q.id}-${j}">(0)</span>
               </span>
             </div>
-            <div class="bar-wrap"><div class="bar-fill" id="bar-${q.id}-${j}" style="width:0%"></div></div>
+            <div class="bar-wrap">
+              <div class="bar-fill ${j===q.correct_answer_index?"correct-bar":""}"
+                id="bar-${q.id}-${j}" style="width:0%"></div>
+            </div>
           </div>`).join("")}
       </div>
       <div class="r-footer" id="tot-${q.id}">0 vote(s)</div>
@@ -696,49 +698,41 @@ function renderResults() {
   questions.forEach(q => refreshCard(q.id));
 }
 
-function refreshCard(questionId) {
-  const q = questions.find(q => q.id === questionId);
+function refreshCard(qId) {
+  const q = questions.find(q => q.id===qId);
   if (!q) return;
-  const counts = voteCounts[questionId] || {};
-  const total  = Object.values(counts).reduce((a, b) => a + b, 0);
-  q.options.forEach((_, j) => {
-    const c   = counts[j] || 0;
-    const pct = total > 0 ? Math.round(c / total * 100) : 0;
-    const p = document.getElementById(`pct-${questionId}-${j}`);
-    const n = document.getElementById(`cnt-${questionId}-${j}`);
-    const b = document.getElementById(`bar-${questionId}-${j}`);
-    if (p) p.textContent = pct + "%";
+  const counts = voteCounts[qId] || {};
+  const total  = Object.values(counts).reduce((a,b)=>a+b,0);
+  q.options.forEach((_,j) => {
+    const c   = counts[j]||0;
+    const pct = total>0 ? Math.round(c/total*100) : 0;
+    const p = document.getElementById(`pct-${qId}-${j}`);
+    const n = document.getElementById(`cnt-${qId}-${j}`);
+    const b = document.getElementById(`bar-${qId}-${j}`);
+    if (p) p.textContent = pct+"%";
     if (n) n.textContent = `(${c})`;
-    if (b) b.style.width  = pct + "%";
+    if (b) b.style.width  = pct+"%";
   });
-  const t = document.getElementById(`tot-${questionId}`);
+  const t = document.getElementById(`tot-${qId}`);
   if (t) t.textContent = `${total} vote(s)`;
 }
 
-// ════════════════════════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════════════════════════
-const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-
+// ════════ INIT ════════
 async function init() {
-  // Questions depuis Supabase
   const { data: qs } = await sb.from("quiz_questions").select("*").order("position");
   questions = qs || [];
   renderEditor();
 
-  // État courant
-  const { data: state } = await sb.from("quiz_state").select("*").eq("id", 1).single();
+  const { data: state } = await sb.from("quiz_state").select("*").eq("id",1).single();
   if (state) applyState(state);
 
-  // Votes existants (reprise après rechargement)
-  const { data: votes } = await sb.from("quiz_votes").select("question_id, answer_index");
-  (votes || []).forEach(({ question_id, answer_index }) => {
-    if (!voteCounts[question_id]) voteCounts[question_id] = {};
-    voteCounts[question_id][answer_index] = (voteCounts[question_id][answer_index] || 0) + 1;
+  const { data: votes } = await sb.from("quiz_votes").select("question_id,answer_index");
+  (votes||[]).forEach(({question_id,answer_index}) => {
+    if (!voteCounts[question_id]) voteCounts[question_id]={};
+    voteCounts[question_id][answer_index] = (voteCounts[question_id][answer_index]||0)+1;
   });
 
-  renderNav();
-  renderResults();
+  renderNav(); renderResults(); refreshMiniRanking();
 }
 
 init();

@@ -1,226 +1,427 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quiz Mariage 💍</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple:  #7c3aed;
+      --purple2: #c084fc;
+      --bg:      #fdf6f0;
+      --card:    #ffffff;
+      --text:    #2d1a3d;
+      --muted:   #8a7090;
+      --border:  #e8dff0;
+    }
+
     body {
       font-family: system-ui, sans-serif;
-      background: #fdf6f0;
+      background: var(--bg);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem 1rem;
+      padding: 2rem 1rem 4rem;
     }
+
     header { text-align: center; margin-bottom: 2rem; }
-    header .emoji { font-size: 2.5rem; }
-    header h1 { font-size: 1.6rem; font-weight: 600; color: #4a2060; margin-top: 0.5rem; }
-    header p { color: #8a7090; font-size: 0.9rem; margin-top: 0.25rem; }
+    .logo  { font-size: 2.8rem; }
+    h1     { font-size: 1.6rem; font-weight: 700; color: var(--text); margin-top: .4rem; }
+    .sub   { font-size: .9rem; color: var(--muted); margin-top: .2rem; }
+
     #app { width: 100%; max-width: 480px; }
 
+    /* ── Carte générique ── */
     .card {
-      background: white; border-radius: 16px;
-      box-shadow: 0 2px 16px rgba(74,32,96,0.08);
-      padding: 1.5rem; margin-bottom: 1.5rem;
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: 0 2px 20px rgba(74,32,96,.09);
+      padding: 1.75rem;
     }
-    .question-num {
-      font-size: 0.75rem; font-weight: 600; color: #b08abb;
-      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;
+
+    /* ── Écran login ── */
+    #screen-login {}
+    .login-title {
+      font-size: 1.15rem; font-weight: 700; color: var(--text);
+      margin-bottom: .25rem;
     }
-    .question-text { font-size: 1.15rem; font-weight: 600; color: #2d1a3d; line-height: 1.4; margin-bottom: 1.25rem; }
-    .options { display: flex; flex-direction: column; gap: 0.6rem; }
-    .option-btn {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 0.85rem 1rem; border-radius: 10px;
-      border: 2px solid #e8dff0; background: #fdf6ff;
-      cursor: pointer; text-align: left; font-size: 1rem; color: #2d1a3d;
-      transition: border-color 0.15s, background 0.15s; width: 100%;
+    .login-sub { font-size: .9rem; color: var(--muted); margin-bottom: 1.25rem; }
+    .field-label {
+      font-size: .75rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .07em; margin-bottom: .35rem;
     }
-    .option-btn:hover { border-color: #a066c0; background: #f5eaff; }
-    .option-btn.selected { border-color: #7c3aed; background: #ede9fe; }
-    .option-btn.disabled { cursor: default; opacity: 0.7; pointer-events: none; }
-    .option-letter {
-      width: 30px; height: 30px; border-radius: 50%;
+    input[type=text] {
+      width: 100%; padding: .75rem 1rem;
+      border: 2px solid var(--border); border-radius: 10px;
+      font-size: 1.05rem; color: var(--text); background: #faf7fd;
+      outline: none; transition: border-color .15s;
+    }
+    input[type=text]:focus { border-color: var(--purple); }
+    .btn-primary {
+      width: 100%; padding: .85rem; margin-top: 1rem;
+      background: var(--purple); color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-primary:disabled { background: #c4b5d4; cursor: default; }
+    .btn-primary:not(:disabled):hover { background: #6d28d9; }
+    .error-msg {
+      margin-top: .75rem; padding: .6rem .9rem;
+      background: #fee2e2; border-radius: 8px;
+      color: #991b1b; font-size: .88rem; display: none;
+    }
+
+    /* ── Écran attente ── */
+    #screen-wait { text-align: center; padding: 3rem 1rem; }
+    .wait-emoji  { font-size: 3rem; margin-bottom: .75rem; }
+    .wait-name   { font-size: 1.1rem; font-weight: 600; color: var(--text); }
+    .wait-sub    { font-size: .9rem; color: var(--muted); margin-top: .35rem; }
+
+    /* ── Écran question ── */
+    #screen-question {}
+    .q-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: .75rem;
+    }
+    .q-num {
+      font-size: .75rem; font-weight: 700; color: var(--purple2);
+      text-transform: uppercase; letter-spacing: .08em;
+    }
+    .q-score-badge {
+      font-size: .78rem; font-weight: 600; color: var(--muted);
+      background: #f0e8ff; padding: .2rem .6rem; border-radius: 999px;
+    }
+    .q-text {
+      font-size: 1.15rem; font-weight: 700; color: var(--text);
+      line-height: 1.4; margin-bottom: 1.25rem;
+    }
+    .options { display: flex; flex-direction: column; gap: .55rem; }
+    .opt-btn {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .85rem 1rem; border-radius: 11px;
+      border: 2px solid var(--border); background: #fdf6ff;
+      cursor: pointer; text-align: left; font-size: .97rem; color: var(--text);
+      transition: border-color .15s, background .15s; width: 100%;
+    }
+    .opt-btn:hover          { border-color: #a066c0; background: #f5eaff; }
+    .opt-btn.selected       { border-color: var(--purple); background: #ede9fe; }
+    .opt-btn.correct        { border-color: #16a34a; background: #dcfce7; }
+    .opt-btn.wrong          { border-color: #dc2626; background: #fee2e2; }
+    .opt-btn.disabled       { pointer-events: none; }
+    .opt-letter {
+      width: 32px; height: 32px; border-radius: 50%;
       background: #e8dff0; display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.85rem; color: #4a2060; flex-shrink: 0;
+      font-weight: 700; font-size: .85rem; color: #4a2060; flex-shrink: 0;
     }
-    .option-btn.selected .option-letter { background: #7c3aed; color: white; }
-    .submit-btn {
-      width: 100%; padding: 0.9rem; background: #7c3aed; color: white;
-      border: none; border-radius: 10px; font-size: 1rem; font-weight: 600;
-      cursor: pointer; margin-top: 1rem; transition: background 0.15s;
+    .opt-btn.selected .opt-letter { background: var(--purple); color: #fff; }
+    .opt-btn.correct  .opt-letter { background: #16a34a; color: #fff; }
+    .opt-btn.wrong    .opt-letter { background: #dc2626; color: #fff; }
+
+    .vote-submit {
+      width: 100%; padding: .85rem; background: var(--purple); color: #fff;
+      border: none; border-radius: 10px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; margin-top: 1rem; transition: background .15s;
     }
-    .submit-btn:disabled { background: #c4b5d4; cursor: default; }
-    .submit-btn:not(:disabled):hover { background: #6d28d9; }
-    .voted-msg { text-align: center; padding: 1rem; color: #15803d; font-weight: 500; }
-    .voted-msg .checkmark { font-size: 1.5rem; display: block; margin-bottom: 0.25rem; }
-    #state-wait, #state-done { text-align: center; padding: 3rem 1rem; color: #8a7090; }
-    #state-wait .emoji, #state-done .emoji { font-size: 3rem; display: block; margin-bottom: 1rem; }
-    #state-done h2 { color: #4a2060; font-size: 1.4rem; }
-    .error-box {
-      background: #fee2e2; border: 1px solid #fca5a5; border-radius: 10px;
-      padding: 1rem; color: #991b1b; font-size: 0.9rem; margin-top: 1rem;
+    .vote-submit:disabled { background: #c4b5d4; cursor: default; }
+    .vote-submit:not(:disabled):hover { background: #6d28d9; }
+
+    .voted-banner {
+      display: flex; align-items: center; gap: .5rem; justify-content: center;
+      margin-top: 1rem; padding: .75rem;
+      background: #dcfce7; border-radius: 10px;
+      font-weight: 600; color: #15803d; font-size: .95rem;
     }
+
+    /* ── Écran score perso (fin) ── */
+    #screen-done { text-align: center; }
+    .done-emoji  { font-size: 3.5rem; margin-bottom: .75rem; }
+    .done-title  { font-size: 1.3rem; font-weight: 700; color: var(--text); }
+    .score-ring  {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), var(--purple2));
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      margin: 1.25rem auto; box-shadow: 0 4px 24px rgba(124,58,237,.3);
+    }
+    .score-num  { font-size: 2rem; font-weight: 800; color: #fff; line-height: 1; }
+    .score-denom { font-size: .85rem; color: rgba(255,255,255,.75); }
+    .done-sub   { font-size: .95rem; color: var(--muted); margin-bottom: 1rem; }
+    .podium-hint {
+      font-size: .88rem; color: var(--muted); margin-top: 1rem;
+      padding: .6rem 1rem; background: #f0e8ff; border-radius: 8px;
+    }
+
+    /* ── Utilitaires ── */
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="emoji">💍</div>
-    <h1>Quiz du Mariage</h1>
-    <p id="subtitle">Chargement…</p>
-  </header>
-  <div id="app">
-    <div id="state-wait" style="display:none">
-      <span class="emoji">⏳</span>
-      <p>Patientez, la prochaine question arrive bientôt…</p>
-    </div>
-    <div id="state-done" style="display:none">
-      <span class="emoji">🎉</span>
-      <h2>Merci d'avoir joué !</h2>
-      <p style="margin-top:0.5rem;color:#8a7090">Félicitations aux mariés 💕</p>
-    </div>
-    <div id="state-question" style="display:none"></div>
+<header>
+  <div class="logo">💍</div>
+  <h1>Quiz du Mariage</h1>
+  <p class="sub" id="subtitle">Bienvenue !</p>
+</header>
+
+<div id="app">
+
+  <!-- LOGIN -->
+  <div id="screen-login" class="card">
+    <div class="login-title">Entrez votre prénom</div>
+    <div class="login-sub">Il apparaîtra dans le classement final 🏆</div>
+    <div class="field-label">Prénom</div>
+    <input type="text" id="login-input" placeholder="Ex : Marie" maxlength="30" autocomplete="off"/>
+    <button class="btn-primary" id="login-btn" onclick="doLogin()">Rejoindre le quiz →</button>
+    <div class="error-msg" id="login-error"></div>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  <!-- ATTENTE -->
+  <div id="screen-wait" class="hidden">
+    <div class="wait-emoji">⏳</div>
+    <div class="wait-name" id="wait-name"></div>
+    <div class="wait-sub">Le quiz va bientôt commencer…<br>Gardez cette page ouverte !</div>
+  </div>
 
-    // ============================================================
-    // 🔧 CONFIGURATION SUPABASE
-    // Copiez depuis : Settings → API dans votre projet Supabase
-    // ============================================================
-    const SUPABASE_URL  = "https://wnovazgofdfbhqivokbx.supabase.co";
-    const SUPABASE_ANON = "sb_publishable_EB6_xTYduYkOBifywzM9Aw_1_of-xGW";
+  <!-- QUESTION -->
+  <div id="screen-question" class="card hidden"></div>
 
-    // ============================================================
+  <!-- FIN -->
+  <div id="screen-done" class="card hidden">
+    <div class="done-emoji">🎉</div>
+    <div class="done-title">Quiz terminé !</div>
+    <div class="score-ring">
+      <div class="score-num" id="final-score">0</div>
+      <div class="score-denom" id="final-denom">/ 0</div>
+    </div>
+    <div class="done-sub" id="final-msg"></div>
+    <div class="podium-hint">📺 Le classement va être affiché sur l'écran principal</div>
+  </div>
 
-    const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+</div>
 
-    // Identifiant unique de cet appareil (persiste entre sessions)
-    let deviceId = localStorage.getItem("mq_device_id");
-    if (!deviceId) {
-      deviceId = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-      localStorage.setItem("mq_device_id", deviceId);
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { SUPABASE_URL, SUPABASE_ANON } from "./config.js";
+
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+const LETTERS = ["A","B","C","D","E","F"];
+
+// ── State local ────────────────────────────────────────────────
+let deviceId = localStorage.getItem("mq_device_id");
+if (!deviceId) {
+  deviceId = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  localStorage.setItem("mq_device_id", deviceId);
+}
+let username      = localStorage.getItem("mq_username") || null;
+let score         = 0;
+let totalQuestions = 0;
+
+// ── Écrans ─────────────────────────────────────────────────────
+const screens = ["login","wait","question","done"];
+function show(name) {
+  screens.forEach(s => {
+    document.getElementById("screen-" + s).classList.toggle("hidden", s !== name);
+  });
+}
+
+// ── Login ──────────────────────────────────────────────────────
+// Si l'invité a déjà un prénom en localStorage, on passe directement
+if (username) initAfterLogin();
+
+const loginInput = document.getElementById("login-input");
+loginInput.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+
+window.doLogin = async () => {
+  const name = loginInput.value.trim();
+  if (!name) return showError("Entrez votre prénom !");
+  if (name.length < 2) return showError("Au moins 2 caractères.");
+
+  const btn = document.getElementById("login-btn");
+  btn.disabled = true; btn.textContent = "Connexion…";
+
+  // Upsert player (device_id unique)
+  const { error } = await sb.from("quiz_players").upsert(
+    { device_id: deviceId, username: name, score: 0 },
+    { onConflict: "device_id", ignoreDuplicates: false }
+  );
+  if (error) {
+    showError("Erreur de connexion, réessayez.");
+    btn.disabled = false; btn.textContent = "Rejoindre le quiz →";
+    return;
+  }
+
+  username = name;
+  localStorage.setItem("mq_username", name);
+  btn.disabled = false; btn.textContent = "Rejoindre le quiz →";
+  initAfterLogin();
+};
+
+function showError(msg) {
+  const el = document.getElementById("login-error");
+  el.textContent = msg; el.style.display = "block";
+}
+
+// ── Après login ────────────────────────────────────────────────
+async function initAfterLogin() {
+  document.getElementById("subtitle").textContent = `Bonjour ${username} 👋`;
+  document.getElementById("wait-name").textContent = `Prêt(e), ${username} !`;
+
+  // Charger le score actuel si reconnexion
+  const { data: player } = await sb.from("quiz_players")
+    .select("score").eq("device_id", deviceId).single();
+  if (player) score = player.score;
+
+  // Charger état courant
+  const { data: state } = await sb.from("quiz_state").select("*").eq("id", 1).single();
+  if (state) await handleState(state);
+
+  // Écoute realtime
+  sb.channel("player_state")
+    .on("postgres_changes",
+      { event: "UPDATE", schema: "public", table: "quiz_state", filter: "id=eq.1" },
+      p => handleState(p.new))
+    .subscribe();
+}
+
+// ── Gestion de l'état ──────────────────────────────────────────
+async function handleState(state) {
+  if (state.status === "waiting") {
+    show("wait");
+  } else if (state.status === "question") {
+    await showQuestion(state.current_question_index);
+  } else if (state.status === "done" || state.status === "podium") {
+    await showDone();
+  }
+}
+
+// ── Affichage d'une question ───────────────────────────────────
+async function showQuestion(idx) {
+  const { data: questions } = await sb
+    .from("quiz_questions").select("*").order("position");
+  if (!questions || idx >= questions.length) return;
+
+  const q = questions[idx];
+  totalQuestions = questions.length;
+
+  // Déjà voté ?
+  const { data: existing } = await sb.from("quiz_votes")
+    .select("answer_index, is_correct")
+    .eq("question_id", q.id)
+    .eq("device_id", deviceId)
+    .maybeSingle();
+
+  renderQuestion(q, idx, totalQuestions, existing);
+  show("question");
+}
+
+function renderQuestion(q, idx, total, existing) {
+  const alreadyVoted = !!existing;
+  const myVote       = existing?.answer_index ?? null;
+  const wasCorrect   = existing?.is_correct   ?? false;
+  const correct      = q.correct_answer_index;
+
+  const el = document.getElementById("screen-question");
+  el.innerHTML = `
+    <div class="q-meta">
+      <span class="q-num">Question ${idx+1} / ${total}</span>
+      <span class="q-score-badge">Score : ${score} / ${idx}</span>
+    </div>
+    <div class="q-text">${q.text}</div>
+    <div class="options" id="opts"></div>
+    ${alreadyVoted
+      ? `<div class="voted-banner">
+          ${wasCorrect ? "✅ Bonne réponse ! +1 point" : "❌ Mauvaise réponse"}
+         </div>`
+      : `<button class="vote-submit" id="vote-btn" disabled>Valider</button>`
+    }`;
+
+  const opts = document.getElementById("opts");
+  let selected = alreadyVoted ? myVote : null;
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    let cls = "opt-btn";
+    if (alreadyVoted) {
+      cls += " disabled";
+      if (i === correct)  cls += " correct";
+      if (i === myVote && i !== correct) cls += " wrong";
+      if (i === myVote && i === correct) cls += " selected";
+    } else if (i === selected) {
+      cls += " selected";
     }
-
-    const stateWait = document.getElementById("state-wait");
-    const stateDone = document.getElementById("state-done");
-    const stateQ    = document.getElementById("state-question");
-    const subtitle  = document.getElementById("subtitle");
-
-    function showOnly(el) {
-      [stateWait, stateDone, stateQ].forEach(e => e.style.display = "none");
-      el.style.display = "block";
+    btn.className = cls;
+    btn.innerHTML = `<span class="opt-letter">${LETTERS[i]}</span><span>${opt}</span>`;
+    if (!alreadyVoted) {
+      btn.addEventListener("click", () => {
+        selected = i;
+        opts.querySelectorAll(".opt-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        document.getElementById("vote-btn").disabled = false;
+      });
     }
+    opts.appendChild(btn);
+  });
 
-    async function init() {
-      const { data, error } = await sb.from("quiz_state").select("*").eq("id", 1).single();
-      if (error) {
-        subtitle.textContent = "Erreur de connexion";
-        stateQ.innerHTML = `<div class="error-box">Impossible de charger le quiz.<br>Vérifiez la configuration Supabase.</div>`;
-        showOnly(stateQ);
-        return;
-      }
-      handleState(data);
-    }
+  if (!alreadyVoted) {
+    document.getElementById("vote-btn").addEventListener("click", async () => {
+      if (selected === null) return;
+      const vBtn = document.getElementById("vote-btn");
+      vBtn.disabled = true; vBtn.textContent = "Envoi…";
 
-    function handleState(state) {
-      if (!state || state.status === "waiting") {
-        subtitle.textContent = "En attente du lancement…";
-        showOnly(stateWait);
-      } else if (state.status === "done") {
-        subtitle.textContent = "Quiz terminé !";
-        showOnly(stateDone);
-      } else if (state.status === "question") {
-        loadQuestion(state.current_question_index);
-      }
-    }
+      const isCorrect = selected === q.correct_answer_index;
 
-    // Écoute les changements d'état en temps réel
-    sb.channel("quiz_state_ch")
-      .on("postgres_changes",
-        { event: "UPDATE", schema: "public", table: "quiz_state", filter: "id=eq.1" },
-        payload => handleState(payload.new))
-      .subscribe();
-
-    async function loadQuestion(idx) {
-      const { data: questions } = await sb
-        .from("quiz_questions").select("*").order("position");
-      if (!questions || idx >= questions.length) return;
-
-      const q = questions[idx];
-      subtitle.textContent = `Question ${idx + 1} / ${questions.length}`;
-
-      const { data: existing } = await sb.from("quiz_votes")
-        .select("answer_index")
-        .eq("question_id", q.id)
-        .eq("device_id", deviceId)
-        .maybeSingle();
-
-      renderQuestion(q, idx, questions.length, !!existing, existing?.answer_index ?? null);
-      showOnly(stateQ);
-    }
-
-    function renderQuestion(q, idx, total, alreadyVoted, myVote) {
-      const letters = ["A","B","C","D","E","F"];
-      const options  = q.options;
-
-      stateQ.innerHTML = `
-        <div class="card">
-          <div class="question-num">Question ${idx + 1} / ${total}</div>
-          <div class="question-text">${q.text}</div>
-          <div class="options" id="options-list"></div>
-          ${alreadyVoted
-            ? `<div class="voted-msg"><span class="checkmark">✅</span>Votre réponse a bien été enregistrée !</div>`
-            : `<button class="submit-btn" id="submit-btn" disabled>Valider ma réponse</button>`}
-        </div>`;
-
-      const list = document.getElementById("options-list");
-      let selected = alreadyVoted ? myVote : null;
-
-      options.forEach((opt, i) => {
-        const btn = document.createElement("button");
-        btn.className = "option-btn"
-          + (alreadyVoted && myVote === i ? " selected" : "")
-          + (alreadyVoted ? " disabled" : "");
-        btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt}</span>`;
-        if (!alreadyVoted) {
-          btn.addEventListener("click", () => {
-            selected = i;
-            list.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
-            btn.classList.add("selected");
-            document.getElementById("submit-btn").disabled = false;
-          });
-        }
-        list.appendChild(btn);
+      const { error } = await sb.from("quiz_votes").insert({
+        question_id:  q.id,
+        device_id:    deviceId,
+        username:     username,
+        answer_index: selected,
+        is_correct:   isCorrect
       });
 
-      if (!alreadyVoted) {
-        document.getElementById("submit-btn").addEventListener("click", async () => {
-          if (selected === null) return;
-          const btn = document.getElementById("submit-btn");
-          btn.disabled = true;
-          btn.textContent = "Envoi…";
-          const { error } = await sb.from("quiz_votes").insert({
-            question_id: q.id,
-            device_id: deviceId,
-            answer_index: selected
-          });
-          // 23505 = violation de contrainte UNIQUE (double-vote protégé par la DB)
-          if (error && error.code !== "23505") {
-            btn.textContent = "Erreur — réessayez";
-            btn.disabled = false;
-            return;
-          }
-          renderQuestion(q, idx, total, true, selected);
-        });
+      if (error && error.code !== "23505") {
+        vBtn.disabled = false; vBtn.textContent = "Valider";
+        return;
       }
-    }
 
-    init();
-  </script>
+      // Mise à jour du score
+      if (isCorrect) {
+        score++;
+        await sb.from("quiz_players")
+          .update({ score })
+          .eq("device_id", deviceId);
+      }
+
+      // Re-render avec résultat visible
+      renderQuestion(q, idx, totalQuestions, { answer_index: selected, is_correct: isCorrect });
+    });
+  }
+}
+
+// ── Fin du quiz ────────────────────────────────────────────────
+async function showDone() {
+  // Score final depuis la DB (source de vérité)
+  const { data: player } = await sb.from("quiz_players")
+    .select("score").eq("device_id", deviceId).single();
+  if (player) score = player.score;
+
+  const { data: questions } = await sb.from("quiz_questions").select("id");
+  const total = questions?.length ?? totalQuestions;
+
+  document.getElementById("final-score").textContent  = score;
+  document.getElementById("final-denom").textContent  = `/ ${total}`;
+
+  const pct = total > 0 ? Math.round(score / total * 100) : 0;
+  let msg = "";
+  if (pct === 100) msg = "Parfait ! Vous avez tout bon 🥇";
+  else if (pct >= 70) msg = "Excellent score ! 🎉";
+  else if (pct >= 40) msg = "Pas mal du tout !";
+  else msg = "La prochaine fois ce sera mieux 😄";
+  document.getElementById("final-msg").textContent = msg;
+
+  show("done");
+}
+</script>
 </body>
 </html>
