@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin — Quiz Mariage 💍</title>
+  <script src="./config.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -337,7 +338,17 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-import { SUPABASE_URL, SUPABASE_ANON } from "./config.js";
+
+const SUPABASE_URL  = window.SUPABASE_URL;
+const SUPABASE_ANON = window.SUPABASE_ANON;
+
+if (!SUPABASE_URL || SUPABASE_URL.includes("XXXXXXXX")) {
+  document.body.innerHTML = `<div style="font-family:system-ui;padding:2rem;color:#fca5a5;background:#1a0d2e;min-height:100vh">
+    <h2>⚠️ config.js non configuré</h2>
+    <p style="margin-top:1rem">Copiez <code>config.example.js</code> en <code>config.js</code> et renseignez vos clés Supabase.</p>
+  </div>`;
+  throw new Error("config.js manquant ou non configuré");
+}
 
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
 const LETTERS = ["A","B","C","D","E","F"];
