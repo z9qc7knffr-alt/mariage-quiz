@@ -265,6 +265,13 @@
     .mini-rank-score { font-size: .9rem; font-weight: 700; color: var(--purple-lt); }
 
     .dash-empty { text-align: center; padding: 3rem 1rem; color: var(--faint); }
+    .proj-links {
+      display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+      margin-bottom: 1.5rem; padding: .75rem 1rem;
+      background: var(--surface); border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .proj-links a { text-decoration: none; }
   </style>
 </head>
 <body>
@@ -304,8 +311,13 @@
     <button class="btn btn-green"   id="btn-start"  onclick="startQuiz()">▶ Lancer</button>
     <button class="btn btn-purple"  id="btn-next"   onclick="nextQuestion()" disabled>⏭ Suivante</button>
     <button class="btn btn-red"     id="btn-end"    onclick="endQuiz()"      disabled>⏹ Terminer</button>
-    <button class="btn btn-gold"    id="btn-podium" onclick="showPodium()"   disabled>🏆 Afficher le podium</button>
+    <button class="btn btn-gold"    id="btn-podium" onclick="triggerPodium()" disabled>🏆 Podium</button>
     <button class="btn btn-gray"    id="btn-reset"  onclick="resetQuiz()">🔄 Reset</button>
+  </div>
+  <div class="proj-links">
+    <span style="font-size:.8rem;color:var(--muted)">📽 Ouvrir sur le rétro :</span>
+    <a href="./display.html" target="_blank" class="btn btn-outline" style="font-size:.82rem;padding:.4rem .9rem">📺 Affichage public</a>
+    <a href="./podium.html"  target="_blank" class="btn btn-outline" style="font-size:.82rem;padding:.4rem .9rem">🏆 Podium</a>
   </div>
 
   <!-- Classement live -->
@@ -355,6 +367,7 @@ const LETTERS = ["A","B","C","D","E","F"];
 
 let questions   = [];
 let currentIdx  = -1;
+let viewIdx     = null;  // null = suivre la question en cours
 let voteCounts  = {};
 const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 
@@ -585,6 +598,7 @@ window.resetQuiz    = async () => {
   await sb.from("quiz_players").delete().neq("id",0);
   await setQuizState("waiting",-1);
   currentIdx=-1; voteCounts={};
+  if (viewIdx === null || viewIdx > currentIdx) viewIdx = null;
   renderNav(); renderResults(); refreshMiniRanking();
   toast("Quiz réinitialisé");
 };
@@ -667,9 +681,12 @@ async function refreshMiniRanking() {
 function renderNav() {
   document.getElementById("q-nav").innerHTML = questions.map((_,i) =>
     `<button class="q-nav-btn ${i===currentIdx?"active":""}"
-      onclick="document.getElementById('rc-${i}')?.scrollIntoView({behavior:'smooth'})">${i+1}</button>`
+      onclick="jumpTo(${i})">${i+1}</button>`
   ).join("");
 }
+
+// Saute à une question précédente pour consulter ses résultats
+window.jumpTo = i => { viewIdx = i; renderResults(); };
 
 function renderResults() {
   const c = document.getElementById("results-container");
@@ -677,11 +694,20 @@ function renderResults() {
     c.innerHTML = `<div class="dash-empty">Aucune question enregistrée.<br>Allez dans <strong>✏️ Questions</strong>.</div>`;
     return;
   }
-  c.innerHTML = questions.map((q,i) => `
-    <div class="result-card ${i===currentIdx?"is-live":""}" id="rc-${i}">
+
+  // Par défaut on affiche la question en cours, sinon celle sélectionnée
+  const idx = viewIdx !== null ? viewIdx : currentIdx;
+  if (idx < 0 || idx >= questions.length) {
+    c.innerHTML = `<div class="dash-empty">Quiz non démarré.</div>`;
+    return;
+  }
+
+  const q = questions[idx];
+  c.innerHTML = `
+    <div class="result-card is-live" id="rc-current">
       <div class="r-label">
-        Question ${i+1}
-        ${i===currentIdx?'<span class="live-badge-sm">EN COURS</span>':""}
+        Question ${idx+1} / ${questions.length}
+        ${idx===currentIdx?'<span class="live-badge-sm">EN COURS</span>':'<span class="live-badge-sm" style="background:#1e3a5f;color:#93c5fd">PASSÉE</span>'}
       </div>
       <div class="r-text">${esc(q.text)||"(sans titre)"}</div>
       <div class="r-rows">
@@ -704,9 +730,9 @@ function renderResults() {
           </div>`).join("")}
       </div>
       <div class="r-footer" id="tot-${q.id}">0 vote(s)</div>
-    </div>`).join("");
+    </div>`;
 
-  questions.forEach(q => refreshCard(q.id));
+  refreshCard(q.id);
 }
 
 function refreshCard(qId) {
