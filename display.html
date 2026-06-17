@@ -3,350 +3,292 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Affichage — Quiz Mariage 💍</title>
+  <title>Affichage — Quiz Mariage</title>
   <script src="./config.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --purple:   #7c3aed;
-      --purple-lt:#c084fc;
-      --gold:     #f59e0b;
-      --bg1:      #0f0520;
-      --bg2:      #1e0d3e;
-      --surface:  rgba(255,255,255,.07);
-      --border:   rgba(255,255,255,.12);
+      --bg:    #000; --surface: rgba(255,255,255,0.07); --border: rgba(255,255,255,0.12);
+      --text:  #fff; --muted: rgba(255,255,255,0.5); --faint: rgba(255,255,255,0.25);
+      --accent:#0a84ff; --green:#30d158; --radius:16px;
+    }
+    html, body { height:100%; background:var(--bg); color:var(--text); overflow:hidden;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;
+      -webkit-font-smoothing:antialiased;
     }
 
-    html, body {
-      height: 100%; font-family: system-ui, sans-serif;
-      background: linear-gradient(150deg, var(--bg1) 0%, var(--bg2) 100%);
-      color: #fff; overflow: hidden;
+    /* ── Attente ── */
+    #s-wait {
+      height:100vh; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:20px; text-align:center; padding:40px;
+    }
+    .wait-ring {
+      width:72px; height:72px; border-radius:50%;
+      border:1.5px solid rgba(255,255,255,0.15); border-top-color:rgba(255,255,255,0.6);
+      animation:spin 1.4s linear infinite; margin-bottom:8px;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .wait-title  { font-size:clamp(2rem,5vw,3.5rem); font-weight:700; letter-spacing:-1px; }
+    .wait-sub    { font-size:clamp(1rem,2vw,1.4rem); color:var(--muted); margin-top:4px; }
+    .wait-url-box {
+      margin-top:24px; padding:20px 32px;
+      border:1px solid var(--border); border-radius:var(--radius);
+      background:var(--surface);
+    }
+    .wait-url-label { font-size:clamp(.8rem,1.5vw,1rem); color:var(--muted); margin-bottom:6px; }
+    .wait-url-value { font-size:clamp(1rem,2.5vw,1.6rem); font-weight:600; letter-spacing:0.01em; }
+
+    /* ── Question ── */
+    #s-question {
+      display:none; height:100vh;
+      flex-direction:column; padding:clamp(20px,4vh,56px) clamp(24px,5vw,72px);
+    }
+    #s-question.visible { display:flex; }
+
+    .q-topbar {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:clamp(16px,3vh,40px); flex-shrink:0;
+    }
+    .q-index {
+      font-size:clamp(.8rem,1.6vw,1.1rem); font-weight:500;
+      color:var(--muted); letter-spacing:0.04em; text-transform:uppercase;
+    }
+    .q-vote-count {
+      font-size:clamp(.8rem,1.5vw,1rem); color:var(--muted);
+    }
+    .q-vote-count strong { color:var(--text); }
+
+    .q-progress-bar {
+      height:2px; background:rgba(255,255,255,0.1); border-radius:1px;
+      margin-bottom:clamp(20px,4vh,48px); flex-shrink:0; overflow:hidden;
+    }
+    .q-progress-fill {
+      height:100%; background:#fff; border-radius:1px;
+      transition:width 0.5s cubic-bezier(0.4,0,0.2,1);
     }
 
-    /* ── Écran attente ── */
-    #screen-wait {
-      height: 100vh;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 1.5rem;
+    /* Layout avec photo : texte à gauche, image à droite */
+    .q-body { flex:1; display:flex; flex-direction:column; min-height:0; }
+    .q-body.has-photo {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto 1fr;
+      column-gap: clamp(16px,3vw,48px);
     }
-    .wait-logo  { font-size: 5rem; animation: float 3s ease-in-out infinite; }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-    .wait-title { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: var(--purple-lt); }
-    .wait-sub   { font-size: 1.1rem; color: rgba(255,255,255,.5); }
-    .wait-qr    {
-      margin-top: 1rem; text-align: center;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 1.5rem 2rem;
-    }
-    .wait-qr p  { font-size: .95rem; color: rgba(255,255,255,.6); margin-bottom: .5rem; }
-    .wait-qr .url { font-size: 1.1rem; font-weight: 700; color: var(--purple-lt); }
+    .q-body.has-photo .q-text       { grid-column:1; grid-row:1; }
+    .q-body.has-photo .opts-grid    { grid-column:1; grid-row:2; }
+    .q-body.has-photo .q-photo-side { grid-column:2; grid-row:1/3; display:flex; align-items:center; }
 
-    /* ── Écran question ── */
-    #screen-question {
-      display: none; height: 100vh;
-      flex-direction: column; padding: 3vw 4vw;
+    .q-photo-side { display:none; }
+    .q-photo-display {
+      width: clamp(200px,35vw,520px);
+      max-height: clamp(200px,55vh,520px);
+      object-fit: cover;
+      border-radius: clamp(10px,1.5vw,20px);
     }
-    #screen-question.visible { display: flex; }
-
-    .q-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 2.5vh; flex-shrink: 0;
+    .q-photo-skeleton {
+      width: clamp(200px,35vw,520px); height: clamp(180px,45vh,420px);
+      border-radius: clamp(10px,1.5vw,20px);
+      background: rgba(255,255,255,.08);
+      animation: shimmer 1.4s ease-in-out infinite;
     }
-    .q-counter {
-      font-size: clamp(.9rem, 1.8vw, 1.2rem); font-weight: 700;
-      color: var(--purple-lt); letter-spacing: .06em; text-transform: uppercase;
-    }
-    .vote-counter {
-      font-size: clamp(.85rem, 1.6vw, 1.1rem);
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 999px; padding: .3rem 1rem;
-      color: rgba(255,255,255,.7);
-    }
-    .vote-counter span { font-weight: 700; color: #fff; }
+    @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.3} }
 
     .q-text {
-      font-size: clamp(1.6rem, 4vw, 3rem);
-      font-weight: 800; line-height: 1.25;
-      margin-bottom: 4vh; flex-shrink: 0;
+      font-size:clamp(1.6rem,4.5vw,3.5rem); font-weight:700;
+      letter-spacing:-0.03em; line-height:1.15;
+      margin-bottom:clamp(16px,3vh,40px); flex-shrink:0;
     }
 
-    .options-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5vh 2vw; flex: 1; align-content: start;
+    .opts-grid {
+      display:grid; gap:clamp(8px,1.5vh,16px);
+      grid-template-columns:repeat(auto-fit,minmax(clamp(200px,40%,500px),1fr));
+      align-content:start; flex:1;
     }
     .opt-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; padding: 1.2vh 1.5vw;
-      display: flex; flex-direction: column; gap: .6vh;
-      transition: border-color .3s;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:clamp(12px,2vh,22px) clamp(14px,2vw,24px);
+      display:flex; flex-direction:column; gap:clamp(6px,1vh,12px);
     }
-    .opt-top { display: flex; align-items: center; gap: 1vw; }
+    .opt-card-top { display:flex; align-items:center; gap:clamp(10px,1.5vw,18px); }
     .opt-badge {
-      width: clamp(32px,3.5vw,48px); height: clamp(32px,3.5vw,48px);
-      border-radius: 50%; background: rgba(124,58,237,.4);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: clamp(.85rem,1.6vw,1.2rem);
-      color: var(--purple-lt); flex-shrink: 0;
+      width:clamp(32px,4vw,50px); height:clamp(32px,4vw,50px); border-radius:50%;
+      border:1px solid rgba(255,255,255,0.2);
+      display:flex; align-items:center; justify-content:center;
+      font-size:clamp(.85rem,1.6vw,1.2rem); font-weight:600; color:rgba(255,255,255,0.7);
+      flex-shrink:0;
     }
-    .opt-text {
-      font-size: clamp(1rem, 2.2vw, 1.5rem);
-      font-weight: 600; line-height: 1.3;
-    }
-    .opt-bar-wrap { height: clamp(6px,1vh,10px); background: rgba(255,255,255,.1); border-radius: 5px; }
-    .opt-bar-fill {
-      height: 100%; border-radius: 5px;
-      background: linear-gradient(90deg, var(--purple), var(--purple-lt));
-      transition: width .5s ease; width: 0%;
-    }
-    .opt-pct {
-      font-size: clamp(.8rem,1.5vw,1rem); font-weight: 700;
-      color: var(--purple-lt); text-align: right;
-    }
+    .opt-text { font-size:clamp(.95rem,2.2vw,1.6rem); font-weight:500; line-height:1.3; }
+    .opt-bar-track { height:clamp(3px,0.6vh,6px); background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; }
+    .opt-bar-fill  { height:100%; background:#fff; border-radius:3px; transition:width .5s cubic-bezier(0.4,0,0.2,1); width:0%; }
+    .opt-pct { font-size:clamp(.8rem,1.4vw,1rem); color:var(--muted); text-align:right; }
 
-    /* ── Transition entre questions ── */
-    .fade-out { animation: fadeOut .4s forwards; }
-    .fade-in  { animation: fadeIn  .4s forwards; }
-    @keyframes fadeOut { to { opacity: 0; transform: scale(.97); } }
-    @keyframes fadeIn  { from { opacity: 0; transform: scale(.97); } to { opacity:1; transform:scale(1); } }
+    /* ── Transition podium ── */
+    #s-podium {
+      display:none; height:100vh;
+      flex-direction:column; align-items:center; justify-content:center; gap:24px;
+    }
+    #s-podium.visible { display:flex; }
+    .pod-title { font-size:clamp(2.5rem,6vw,5rem); font-weight:700; letter-spacing:-2px; }
+    .pod-sub   { font-size:clamp(1rem,2vw,1.5rem); color:var(--muted); }
+    .countdown { font-size:clamp(4rem,10vw,8rem); font-weight:700; color:rgba(255,255,255,.2); letter-spacing:-4px; }
 
-    /* ── Écran podium redirect ── */
-    #screen-podium {
-      display: none; height: 100vh;
-      flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;
-    }
-    #screen-podium.visible { display: flex; }
-    .pod-redirect-title {
-      font-size: clamp(2rem,5vw,3.5rem); font-weight: 800;
-      background: linear-gradient(90deg,#f59e0b,#c084fc,#60a5fa);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .pod-redirect-sub { font-size: 1.1rem; color: rgba(255,255,255,.5); }
-    .countdown-ring {
-      width: 80px; height: 80px; border-radius: 50%;
-      background: var(--surface); border: 3px solid var(--purple);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2rem; font-weight: 800; color: var(--purple-lt);
-    }
-
-    /* ── Barre de progression en bas ── */
-    .progress-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 4px;
-      background: rgba(255,255,255,.08);
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--purple), var(--purple-lt));
-      transition: width .4s ease;
-    }
-
-    /* ── Badge LIVE ── */
-    .live-badge {
-      position: fixed; top: 1rem; right: 1rem;
-      background: rgba(22,163,74,.85); color: #fff;
-      font-size: .75rem; font-weight: 700;
-      padding: .3rem .7rem; border-radius: 999px;
-      display: flex; align-items: center; gap: .35rem; z-index: 10;
-    }
-    .live-dot { width:7px; height:7px; border-radius:50%; background:#fff; animation:blink 1s infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+    /* ── Fade ── */
+    .fade-out { animation:fo .35s ease forwards; }
+    .fade-in  { animation:fi .35s ease forwards; }
+    @keyframes fo { to { opacity:0; transform:scale(.98); } }
+    @keyframes fi { from { opacity:0; transform:scale(.98); } }
   </style>
 </head>
 <body>
 
-<div class="live-badge"><div class="live-dot"></div> LIVE</div>
-
 <!-- Attente -->
-<div id="screen-wait">
-  <div class="wait-logo">💍</div>
-  <div class="wait-title">Quiz du Mariage</div>
-  <div class="wait-sub">Le quiz va commencer…</div>
-  <div class="wait-qr">
-    <p>Participez depuis votre téléphone :</p>
-    <div class="url" id="game-url">—</div>
+<div id="s-wait">
+  <div class="wait-ring"></div>
+  <div class="wait-title">Quiz du mariage</div>
+  <div class="wait-sub">Le quiz commence bientôt…</div>
+  <div class="wait-url-box">
+    <div class="wait-url-label">Participez depuis votre téléphone</div>
+    <div class="wait-url-value" id="game-url">—</div>
   </div>
 </div>
 
-<!-- Question en cours -->
-<div id="screen-question">
-  <div class="q-header">
-    <div class="q-counter" id="q-counter">Question 1</div>
-    <div class="vote-counter">Votes : <span id="vote-count">0</span></div>
+<!-- Question -->
+<div id="s-question">
+  <div class="q-topbar">
+    <div class="q-index" id="q-index">Question 1</div>
+    <div class="q-vote-count">Votes : <strong id="vote-count">0</strong></div>
   </div>
-  <div class="q-text" id="q-text"></div>
-  <div class="options-grid" id="options-grid"></div>
+  <div class="q-progress-bar"><div class="q-progress-fill" id="q-pbar"></div></div>
+  <div class="q-body" id="q-body">
+    <div class="q-text" id="q-text"></div>
+    <div class="opts-grid" id="opts-grid"></div>
+    <div class="q-photo-side" id="q-photo-side"></div>
+  </div>
 </div>
 
-<!-- Transition vers podium -->
-<div id="screen-podium">
-  <div class="pod-redirect-title">🏆 Classement Final !</div>
-  <div class="pod-redirect-sub">Redirection en cours…</div>
-  <div class="countdown-ring" id="countdown">3</div>
+<!-- Transition podium -->
+<div id="s-podium">
+  <div class="pod-title">Classement final</div>
+  <div class="pod-sub">Redirection dans…</div>
+  <div class="countdown" id="countdown">3</div>
 </div>
-
-<!-- Barre de progression -->
-<div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 const SUPABASE_URL  = window.SUPABASE_URL;
 const SUPABASE_ANON = window.SUPABASE_ANON;
-
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
 const LETTERS = ["A","B","C","D","E","F"];
 
-// Afficher l'URL de la page invité dans l'écran d'attente
-const base = location.href.replace("display.html","");
-document.getElementById("game-url").textContent = base + "index.html";
+document.getElementById("game-url").textContent = location.href.replace("display.html","index.html");
 
-let questions   = [];
-let currentQ    = null;
-let voteCounts  = {};
-let totalQ      = 0;
+let questions=[], currentQ=null, voteCounts={}, totalQ=0;
 
-// ── Écrans ──────────────────────────────────────────────────────
-function showScreen(name) {
-  document.getElementById("screen-wait").style.display     = name==="wait"    ? "flex" : "none";
-  document.getElementById("screen-question").classList.toggle("visible", name==="question");
-  document.getElementById("screen-podium").style.display   = name==="podium"  ? "flex" : "none";
+function screen(name) {
+  document.getElementById("s-wait").style.display     = name==="wait"    ?"flex":"none";
+  document.getElementById("s-question").classList.toggle("visible", name==="question");
+  document.getElementById("s-podium").style.display   = name==="podium"  ?"flex":"none";
 }
 
-// ── Init ─────────────────────────────────────────────────────────
 async function init() {
-  const { data: qs } = await sb.from("quiz_questions").select("*").order("position");
-  questions = qs || [];
-  totalQ    = questions.length;
-
-  const { data: state } = await sb.from("quiz_state").select("*").eq("id",1).single();
+  const {data:qs} = await sb.from("quiz_questions").select("*").order("position");
+  questions=qs||[]; totalQ=questions.length;
+  const {data:state} = await sb.from("quiz_state").select("*").eq("id",1).single();
   if (state) await handleState(state, false);
 
-  // Écoute temps réel de l'état
-  sb.channel("display_state")
-    .on("postgres_changes",
-      { event:"UPDATE", schema:"public", table:"quiz_state", filter:"id=eq.1" },
-      p => handleState(p.new, true))
+  sb.channel("d_state")
+    .on("postgres_changes",{event:"UPDATE",schema:"public",table:"quiz_state",filter:"id=eq.1"}, p=>handleState(p.new,true))
     .subscribe();
-
-  // Écoute temps réel des votes
-  sb.channel("display_votes")
-    .on("postgres_changes",
-      { event:"INSERT", schema:"public", table:"quiz_votes" },
-      p => {
-        const { question_id, answer_index } = p.new;
-        if (!voteCounts[question_id]) voteCounts[question_id] = {};
-        voteCounts[question_id][answer_index] = (voteCounts[question_id][answer_index]||0)+1;
-        if (currentQ?.id === question_id) updateBars();
-      })
-    .subscribe();
+  sb.channel("d_votes")
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"quiz_votes"}, p=>{
+      const {question_id,answer_index}=p.new;
+      if(!voteCounts[question_id]) voteCounts[question_id]={};
+      voteCounts[question_id][answer_index]=(voteCounts[question_id][answer_index]||0)+1;
+      if(currentQ?.id===question_id) updateBars();
+    }).subscribe();
 }
 
-// ── Gestion de l'état ────────────────────────────────────────────
 async function handleState(state, animate) {
-  if (state.status === "waiting") {
-    showScreen("wait");
-    return;
-  }
-  if (state.status === "podium" || state.status === "done") {
-    showPodiumRedirect();
-    return;
-  }
-  if (state.status === "question") {
-    const idx = state.current_question_index;
-    const q   = questions[idx];
+  if (state.status==="waiting") { screen("wait"); return; }
+  if (state.status==="podium"||state.status==="done") { podiumRedirect(); return; }
+  if (state.status==="question") {
+    const idx=state.current_question_index, q=questions[idx];
     if (!q) return;
-
-    // Charger les votes déjà existants pour cette question
     if (!voteCounts[q.id]) {
-      const { data: existing } = await sb.from("quiz_votes")
-        .select("answer_index").eq("question_id", q.id);
-      voteCounts[q.id] = {};
-      (existing||[]).forEach(v => {
-        voteCounts[q.id][v.answer_index] = (voteCounts[q.id][v.answer_index]||0)+1;
-      });
+      const {data:ev} = await sb.from("quiz_votes").select("answer_index").eq("question_id",q.id);
+      voteCounts[q.id]={};
+      (ev||[]).forEach(v=>{ voteCounts[q.id][v.answer_index]=(voteCounts[q.id][v.answer_index]||0)+1; });
     }
-
-    if (animate && currentQ && currentQ.id !== q.id) {
-      // Transition animée
-      const el = document.getElementById("screen-question");
-      el.classList.add("fade-out");
-      await sleep(380);
-      el.classList.remove("fade-out");
-      renderQuestion(q, idx);
-      el.classList.add("fade-in");
-      await sleep(380);
-      el.classList.remove("fade-in");
-    } else {
-      renderQuestion(q, idx);
-    }
-    showScreen("question");
+    if (animate && currentQ && currentQ.id!==q.id) {
+      const el=document.getElementById("s-question");
+      el.classList.add("fade-out"); await sleep(320); el.classList.remove("fade-out");
+      renderQ(q,idx); el.classList.add("fade-in"); await sleep(320); el.classList.remove("fade-in");
+    } else { renderQ(q,idx); }
+    screen("question");
   }
 }
 
-// ── Rendu d'une question ─────────────────────────────────────────
-function renderQuestion(q, idx) {
-  currentQ = q;
+function renderQ(q, idx) {
+  currentQ=q;
+  document.getElementById("q-index").textContent = `Question ${idx+1} / ${totalQ}`;
+  document.getElementById("q-pbar").style.width  = totalQ>0 ? Math.round((idx+1)/totalQ*100)+"%" : "0%";
+  document.getElementById("q-text").textContent  = q.text;
 
-  document.getElementById("q-counter").textContent =
-    `Question ${idx+1} / ${totalQ}`;
-  document.getElementById("q-text").textContent = q.text;
+  // Photo optionnelle — layout deux colonnes si présente
+  const body      = document.getElementById("q-body");
+  const photoSide = document.getElementById("q-photo-side");
+  if (q.photo_url) {
+    body.classList.add("has-photo");
+    photoSide.style.display = "flex";
+    photoSide.innerHTML = `<div class="q-photo-skeleton" id="dsk"></div>`;
+    const img = new Image();
+    img.className = "q-photo-display";
+    img.alt       = "illustration";
+    img.onload  = () => { const sk=document.getElementById("dsk"); if(sk) sk.replaceWith(img); };
+    img.onerror = () => { body.classList.remove("has-photo"); photoSide.style.display="none"; photoSide.innerHTML=""; };
+    img.src = q.photo_url;
+  } else {
+    body.classList.remove("has-photo");
+    photoSide.style.display = "none";
+    photoSide.innerHTML = "";
+  }
 
-  // Barre de progression
-  document.getElementById("progress-fill").style.width =
-    totalQ > 0 ? `${Math.round((idx+1)/totalQ*100)}%` : "0%";
-
-  // Options — SANS indiquer la bonne réponse
-  const grid = document.getElementById("options-grid");
-  grid.innerHTML = q.options.map((o, j) => `
-    <div class="opt-card" id="opt-${j}">
-      <div class="opt-top">
+  document.getElementById("opts-grid").innerHTML = q.options.map((o,j)=>`
+    <div class="opt-card" id="oc-${j}">
+      <div class="opt-card-top">
         <div class="opt-badge">${LETTERS[j]}</div>
         <div class="opt-text">${o}</div>
       </div>
-      <div class="opt-bar-wrap">
-        <div class="opt-bar-fill" id="bar-${j}"></div>
-      </div>
-      <div class="opt-pct" id="pct-${j}">—</div>
+      <div class="opt-bar-track"><div class="opt-bar-fill" id="ob-${j}"></div></div>
+      <div class="opt-pct" id="op-${j}">—</div>
     </div>`).join("");
-
   updateBars();
 }
 
-// ── Mise à jour des barres de % ──────────────────────────────────
 function updateBars() {
   if (!currentQ) return;
-  const counts = voteCounts[currentQ.id] || {};
-  const total  = Object.values(counts).reduce((a,b)=>a+b,0);
-
-  document.getElementById("vote-count").textContent = total;
-
-  currentQ.options.forEach((_, j) => {
-    const c   = counts[j] || 0;
-    const pct = total > 0 ? Math.round(c/total*100) : 0;
-    const bar = document.getElementById(`bar-${j}`);
-    const lbl = document.getElementById(`pct-${j}`);
-    if (bar) bar.style.width = pct+"%";
-    if (lbl) lbl.textContent = total > 0 ? pct+"%" : "—";
+  const counts=voteCounts[currentQ.id]||{};
+  const total=Object.values(counts).reduce((a,b)=>a+b,0);
+  document.getElementById("vote-count").textContent=total;
+  currentQ.options.forEach((_,j)=>{
+    const c=counts[j]||0, pct=total>0?Math.round(c/total*100):0;
+    const b=document.getElementById(`ob-${j}`), l=document.getElementById(`op-${j}`);
+    if(b) b.style.width=pct+"%";
+    if(l) l.textContent=total>0?pct+"%":"—";
   });
 }
 
-// ── Podium : compte à rebours + redirection ──────────────────────
-function showPodiumRedirect() {
-  showScreen("podium");
-  let n = 3;
-  document.getElementById("countdown").textContent = n;
-  const t = setInterval(() => {
-    n--;
-    document.getElementById("countdown").textContent = n;
-    if (n <= 0) {
-      clearInterval(t);
-      location.href = "./podium.html";
-    }
-  }, 1000);
+function podiumRedirect() {
+  screen("podium"); let n=3;
+  document.getElementById("countdown").textContent=n;
+  const t=setInterval(()=>{
+    n--; document.getElementById("countdown").textContent=n;
+    if(n<=0){ clearInterval(t); location.href="./podium.html"; }
+  },1000);
 }
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 init();
 </script>
 </body>

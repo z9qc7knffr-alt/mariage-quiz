@@ -3,328 +3,375 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin — Quiz Mariage 💍</title>
+  <title>Admin — Quiz Mariage</title>
   <script src="./config.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg:       #1a0d2e;
-      --surface:  #2d1a4e;
-      --surface2: #3d2060;
-      --border:   #4a2878;
-      --purple:   #7c3aed;
-      --purple-lt:#c084fc;
-      --text:     #f0e8ff;
-      --muted:    #b08abb;
-      --faint:    #8a7090;
-      --green:    #16a34a;
-      --gold:     #f59e0b;
+      --black:  #1d1d1f; --gray1: #f5f5f7; --gray2: #e8e8ed;
+      --gray3:  #6e6e73; --gray4: #aeaeb2;
+      --accent: #0071e3; --green: #34c759; --red: #ff3b30; --gold: #ff9f0a;
+      --radius: 12px;
+    }
+    html { font-size: 16px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+      background: #fff; color: var(--black); min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
-    /* ── Onglets ── */
-    .tab-bar {
-      display: flex; border-bottom: 1px solid var(--border);
-      background: var(--surface); position: sticky; top: 0; z-index: 10;
+    /* ── Nav ── */
+    .nav {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--gray2);
+      display: flex; align-items: center;
+      padding: 0 24px; height: 52px; gap: 4px;
     }
-    .tab-btn {
-      padding: 1rem 1.4rem; font-size: .88rem; font-weight: 600;
-      background: none; border: none; color: var(--muted);
-      cursor: pointer; border-bottom: 3px solid transparent;
-      transition: color .15s, border-color .15s;
+    .nav-logo { font-size: 15px; font-weight: 600; color: var(--black); margin-right: 16px; }
+    .nav-tab {
+      height: 52px; padding: 0 14px; border: none; background: none;
+      font-size: 14px; font-weight: 500; color: var(--gray3);
+      cursor: pointer; border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s; font-family: inherit;
     }
-    .tab-btn.active { color: var(--purple-lt); border-bottom-color: var(--purple-lt); }
-    .tab-btn:hover:not(.active) { color: var(--text); }
+    .nav-tab.active { color: var(--black); border-bottom-color: var(--black); }
 
-    .tab-pane { display: none; padding: 2rem; max-width: 860px; margin: 0 auto; }
-    .tab-pane.active { display: block; }
+    /* ── Layout ── */
+    .pane { display: none; max-width: 720px; margin: 0 auto; padding: 32px 24px 80px; }
+    .pane.active { display: block; }
+
+    /* ── Section titles ── */
+    .section-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+    }
+    .section-title { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
 
     /* ── Boutons ── */
     .btn {
-      display: inline-flex; align-items: center; gap: .4rem;
-      padding: .55rem 1.1rem; border-radius: 8px; border: none;
-      font-size: .88rem; font-weight: 600; cursor: pointer;
-      transition: filter .15s, opacity .15s; white-space: nowrap;
+      height: 36px; padding: 0 16px; border-radius: 8px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      border: none; transition: opacity 0.15s; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
     }
-    .btn:disabled { opacity: .35; cursor: default; }
-    .btn:not(:disabled):hover { filter: brightness(1.12); }
-    .btn-purple  { background: var(--purple);  color: #fff; }
-    .btn-green   { background: var(--green);   color: #fff; }
-    .btn-gray    { background: #374151;        color: #fff; }
-    .btn-red     { background: #b91c1c;        color: #fff; }
-    .btn-gold    { background: var(--gold);    color: #1c1000; }
-    .btn-outline {
-      background: transparent; color: var(--purple-lt);
-      border: 1px solid var(--border);
-    }
-    .btn-outline:not(:disabled):hover { background: var(--surface); }
-
-    /* ── Inputs ── */
-    input[type=text], textarea, select {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: .55rem .75rem;
-      color: var(--text); font-size: .9rem; width: 100%; font-family: inherit;
-    }
-    input[type=text]:focus, textarea:focus, select:focus { outline: none; border-color: var(--purple); }
-    textarea { resize: vertical; min-height: 56px; line-height: 1.5; }
-    select option { background: #2d1a4e; }
+    .btn:disabled { opacity: 0.3; cursor: default; }
+    .btn:not(:disabled):active { opacity: 0.75; }
+    .btn-dark   { background: var(--black); color: #fff; }
+    .btn-light  { background: var(--gray1); color: var(--black); border: 1px solid var(--gray2); }
+    .btn-green  { background: var(--green); color: #fff; }
+    .btn-red    { background: var(--red);   color: #fff; }
+    .btn-gold   { background: var(--gold);  color: #fff; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
     /* ── Toast ── */
     #toast {
-      position: fixed; bottom: 1.5rem; right: 1.5rem;
-      background: #1c3a2a; color: #86efac;
-      border: 1px solid #166534; border-radius: 10px;
-      padding: .75rem 1.25rem; font-size: .9rem; font-weight: 600;
-      opacity: 0; transform: translateY(8px);
-      transition: opacity .25s, transform .25s;
-      pointer-events: none; z-index: 100;
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(8px);
+      background: var(--black); color: #fff; border-radius: 999px;
+      padding: 10px 20px; font-size: 14px; font-weight: 500;
+      opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100;
+      white-space: nowrap;
     }
-    #toast.show { opacity: 1; transform: translateY(0); }
-    #toast.error { background: #3a1c1c; color: #fca5a5; border-color: #7f1d1d; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.error { background: var(--red); }
 
     /* ════ ÉDITEUR ════ */
-    .toolbar {
-      display: flex; gap: .5rem; flex-wrap: wrap;
-      align-items: center; margin-bottom: 1.5rem;
-    }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
     .toolbar-sep { flex: 1; }
 
-    .q-card-edit {
-      background: var(--surface); border-radius: 14px;
-      border: 1px solid var(--border); margin-bottom: 1rem; overflow: hidden;
+    .q-item {
+      border: 1px solid var(--gray2); border-radius: var(--radius);
+      margin-bottom: 12px; overflow: hidden;
     }
-    .q-card-head {
-      display: flex; align-items: center; gap: .75rem;
-      padding: .75rem 1rem; background: var(--surface2);
-      cursor: pointer; user-select: none;
+    .q-item-head {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; cursor: pointer; background: #fff;
+      transition: background 0.1s;
     }
-    .q-card-head:hover { background: #4a2878; }
-    .q-num-badge {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--purple); color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .8rem; font-weight: 700; flex-shrink: 0;
-    }
-    .q-card-title { flex: 1; font-size: .95rem; font-weight: 500; }
-    .q-card-title.placeholder { color: var(--faint); font-style: italic; }
-    .chevron { font-size: .75rem; color: var(--muted); transition: transform .2s; }
-    .q-card-edit.collapsed .chevron { transform: rotate(-90deg); }
-    .q-card-body { padding: 1rem; display: flex; flex-direction: column; gap: .9rem; }
-    .q-card-edit.collapsed .q-card-body { display: none; }
-
-    .field-label {
-      font-size: .72rem; font-weight: 600; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .06em; margin-bottom: .3rem;
-    }
-
-    /* Options avec bouton "bonne réponse" */
-    .opt-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; }
-    .opt-badge {
+    .q-item-head:hover { background: var(--gray1); }
+    .q-num {
       width: 26px; height: 26px; border-radius: 50%;
-      background: var(--surface2); color: var(--purple-lt);
+      background: var(--black); color: #fff;
       display: flex; align-items: center; justify-content: center;
-      font-size: .75rem; font-weight: 700; flex-shrink: 0;
+      font-size: 12px; font-weight: 600; flex-shrink: 0;
     }
-    .correct-btn {
+    .q-title { flex: 1; font-size: 15px; font-weight: 500; color: var(--black); }
+    .q-title.empty { color: var(--gray4); font-weight: 400; }
+    .q-chevron { font-size: 12px; color: var(--gray4); transition: transform 0.2s; }
+    .q-item.open .q-chevron { transform: rotate(180deg); }
+
+    .q-item-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--gray2); }
+    .q-item.open .q-item-body { display: block; }
+
+    .field-lbl {
+      font-size: 12px; font-weight: 500; color: var(--gray3);
+      letter-spacing: 0.03em; margin: 14px 0 6px;
+    }
+    textarea, input[type=text] {
+      width: 100%; border: 1px solid var(--gray2); border-radius: 8px;
+      padding: 10px 12px; font-size: 15px; color: var(--black);
+      background: #fff; outline: none; font-family: inherit;
+      transition: border-color 0.15s; resize: none;
+    }
+    textarea:focus, input[type=text]:focus { border-color: var(--black); }
+    textarea { min-height: 60px; line-height: 1.5; }
+
+    .opt-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+    .opt-row  { display: flex; align-items: center; gap: 8px; }
+    .opt-lbl  {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--gray1); border: 1px solid var(--gray2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: var(--gray3); flex-shrink: 0;
+    }
+    .opt-correct-btn {
       width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
-      border: 1.5px solid var(--border); background: transparent;
+      border: 1px solid var(--gray2); background: #fff;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      font-size: .9rem; transition: background .15s, border-color .15s;
-      title: "Marquer comme bonne réponse";
+      font-size: 14px; transition: all 0.15s;
     }
-    .correct-btn.active { background: #14532d; border-color: #16a34a; }
-    .correct-btn:not(.active):hover { border-color: var(--purple); }
+    .opt-correct-btn.active { background: var(--green); border-color: var(--green); color: #fff; }
     .icon-btn {
-      background: none; border: none; cursor: pointer; padding: .2rem;
-      color: var(--faint); font-size: 1rem; transition: color .15s; flex-shrink: 0;
+      width: 28px; height: 28px; border: none; background: none;
+      cursor: pointer; color: var(--gray4); font-size: 16px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.15s;
     }
-    .icon-btn:hover { color: #ef4444; }
+    .icon-btn:hover { color: var(--red); }
     .add-opt-btn {
-      background: none; border: 1px dashed var(--border); color: var(--muted);
-      border-radius: 7px; padding: .3rem .75rem; font-size: .82rem;
-      cursor: pointer; width: 100%; margin-top: .2rem;
-      transition: border-color .15s, color .15s;
+      width: 100%; height: 36px; border-radius: 8px;
+      border: 1px dashed var(--gray2); background: none;
+      color: var(--gray3); font-size: 14px; cursor: pointer;
+      margin-top: 6px; transition: border-color 0.15s, color 0.15s;
+      font-family: inherit;
     }
-    .add-opt-btn:hover { border-color: var(--purple); color: var(--purple-lt); }
+    .add-opt-btn:hover { border-color: var(--black); color: var(--black); }
+    .correct-hint { font-size: 12px; color: var(--green); margin-top: 4px; }
 
-    .correct-hint {
-      font-size: .78rem; color: #4ade80; margin-top: .1rem;
-      display: flex; align-items: center; gap: .3rem;
+    /* ── Photo upload ── */
+    .photo-zone {
+      margin-top: 6px; border: 1px dashed var(--gray2); border-radius: 10px;
+      padding: 14px; text-align: center; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+    .photo-zone:hover { border-color: var(--black); background: var(--gray1); }
+    .photo-zone input[type=file] { display: none; }
+    .photo-zone-label { font-size: 13px; color: var(--gray3); line-height: 1.5; }
+    .photo-zone-label strong { color: var(--black); }
+
+    .photo-preview {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px; background: var(--gray1);
+      border: 1px solid var(--gray2); border-radius: 10px; margin-top: 6px;
+    }
+    .photo-thumb {
+      width: 80px; height: 56px; border-radius: 6px;
+      object-fit: cover; flex-shrink: 0; border: 1px solid var(--gray2);
+    }
+    .photo-thumb-skeleton {
+      width: 80px; height: 56px; border-radius: 6px;
+      background: var(--gray2); flex-shrink: 0;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.5} }
+    .photo-info { flex: 1; min-width: 0; }
+    .photo-name { font-size: 12px; color: var(--black); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .photo-size { font-size: 11px; color: var(--gray3); margin-top: 2px; }
+    .photo-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+    .photo-replace-btn, .photo-delete-btn {
+      font-size: 12px; font-weight: 500; border: none; background: none;
+      cursor: pointer; padding: 2px 0; font-family: inherit;
+    }
+    .photo-replace-btn { color: var(--accent); }
+    .photo-delete-btn  { color: var(--red);    }
+    .photo-uploading { font-size: 12px; color: var(--gray3); margin-top: 4px; }
+
+    .q-item-footer {
+      display: flex; gap: 6px; justify-content: flex-end;
+      padding-top: 14px; border-top: 1px solid var(--gray2); margin-top: 14px;
     }
 
-    .q-card-footer {
-      display: flex; gap: .5rem; justify-content: flex-end;
-      padding-top: .6rem; border-top: 1px solid var(--border);
+    .empty-state {
+      text-align: center; padding: 60px 24px; color: var(--gray4);
+      font-size: 15px; border: 1px dashed var(--gray2); border-radius: var(--radius);
     }
-
-    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--faint); }
-    .empty-state .big { font-size: 2.5rem; margin-bottom: .75rem; }
 
     /* Modal import */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,.7);
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.3);
       display: flex; align-items: center; justify-content: center;
-      z-index: 50; padding: 1rem;
+      padding: 20px; z-index: 50;
     }
-    .modal-overlay.hidden { display: none; }
+    .modal-bg.hidden { display: none; }
     .modal {
-      background: var(--surface); border-radius: 16px;
-      border: 1px solid var(--border);
-      padding: 1.5rem; width: 100%; max-width: 560px;
+      background: #fff; border-radius: 16px; padding: 24px;
+      width: 100%; max-width: 520px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
     }
-    .modal h3 { font-size: 1rem; font-weight: 600; color: var(--purple-lt); margin-bottom: .5rem; }
-    .modal p  { font-size: .85rem; color: var(--muted); margin-bottom: .75rem; line-height: 1.5; }
-    .modal textarea { font-family: monospace; font-size: .82rem; min-height: 180px; }
-    .modal-actions { display: flex; gap: .5rem; justify-content: flex-end; margin-top: 1rem; }
+    .modal h3 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+    .modal p  { font-size: 13px; color: var(--gray3); margin-bottom: 12px; line-height: 1.5; }
+    .modal textarea { font-family: "SF Mono", monospace; font-size: 13px; min-height: 160px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
 
     /* ════ DASHBOARD ════ */
-    .dash-header {
+    .status-row {
       display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 10px;
     }
-    .status-pill {
-      display: inline-flex; align-items: center; gap: .4rem;
-      padding: .4rem 1rem; border-radius: 999px;
-      font-size: .85rem; font-weight: 600;
+    .status-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 999px;
+      font-size: 13px; font-weight: 500;
     }
-    .pill-waiting { background: #3d2060; color: #c4a0e8; }
-    .pill-live    { background: #14532d; color: #86efac; }
-    .pill-done    { background: #1e3a5f; color: #93c5fd; }
-    .pill-podium  { background: #5c3a00; color: #fde68a; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-    .dot.blink { animation: blink 1s infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+    .chip-wait   { background: var(--gray1); color: var(--gray3); }
+    .chip-live   { background: #e8f9ee;      color: #1a7a3a; }
+    .chip-done   { background: #e8f0f9;      color: #1a3a7a; }
+    .chip-podium { background: #fff5e0;      color: #7a4a00; }
+    .chip-dot    { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .chip-dot.blink { animation: blink 1.2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-    .controls { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-
-    .q-nav { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-    .q-nav-btn {
-      width: 34px; height: 34px; border-radius: 50%;
-      border: 2px solid var(--border); background: transparent;
-      color: var(--muted); font-weight: 600; cursor: pointer;
-      transition: all .15s; font-size: .82rem;
+    .proj-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-radius: var(--radius);
+      border: 1px solid var(--gray2); background: var(--gray1);
+      margin-bottom: 24px; flex-wrap: wrap; gap: 8px;
     }
-    .q-nav-btn.active { background: var(--purple); border-color: var(--purple); color: #fff; }
-    .q-nav-btn:hover:not(.active) { border-color: var(--purple); color: var(--purple-lt); }
+    .proj-label { font-size: 13px; color: var(--gray3); margin-right: 4px; }
+    .proj-bar a { text-decoration: none; }
 
+    /* Classement mini */
+    .ranking-card {
+      border: 1px solid var(--gray2); border-radius: var(--radius);
+      margin-bottom: 24px; overflow: hidden;
+    }
+    .ranking-card-head {
+      padding: 12px 16px; border-bottom: 1px solid var(--gray2);
+      font-size: 13px; font-weight: 500; color: var(--gray3);
+      letter-spacing: 0.02em;
+    }
+    .ranking-rows { padding: 8px 0; }
+    .rank-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px;
+    }
+    .rank-pos  { width: 22px; font-size: 13px; font-weight: 500; color: var(--gray3); text-align: center; }
+    .rank-name { flex: 1; font-size: 15px; font-weight: 500; }
+    .rank-score { font-size: 15px; color: var(--gray3); }
+    .rank-empty { padding: 16px; font-size: 14px; color: var(--gray4); text-align: center; }
+
+    /* Carte résultat question */
     .result-card {
-      background: var(--surface); border-radius: 14px;
-      border: 1px solid var(--border);
-      padding: 1.25rem; margin-bottom: 1rem;
+      border: 1px solid var(--gray2); border-radius: var(--radius);
+      overflow: hidden; margin-bottom: 16px;
     }
-    .result-card.is-live { border-color: var(--green); }
-    .r-label { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .35rem; }
-    .live-badge-sm {
-      display: inline-block; font-size: .68rem; font-weight: 700;
-      background: #14532d; color: #86efac; padding: .1rem .45rem;
-      border-radius: 999px; margin-left: .4rem; vertical-align: middle;
+    .result-card.live { border-color: var(--black); }
+    .result-head {
+      padding: 14px 16px; border-bottom: 1px solid var(--gray2);
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .r-text { font-size: 1.05rem; font-weight: 600; margin-bottom: 1rem; line-height: 1.4; }
-    .r-rows { display: flex; flex-direction: column; gap: .55rem; }
-    .r-row  { display: flex; flex-direction: column; gap: .2rem; }
-    .r-top  { display: flex; justify-content: space-between; align-items: center; }
-    .r-opt  { font-size: .9rem; color: #e2d9f0; display: flex; align-items: center; gap: .4rem; }
-    .r-correct-tag {
-      font-size: .68rem; font-weight: 700; background: #14532d;
-      color: #86efac; padding: .1rem .4rem; border-radius: 4px;
+    .result-head-left { display: flex; flex-direction: column; gap: 3px; }
+    .result-qlabel { font-size: 12px; color: var(--gray3); font-weight: 500; }
+    .result-qtext  { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; line-height: 1.3; }
+    .live-pill {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+      padding: 3px 8px; border-radius: 999px;
+      background: var(--black); color: #fff;
     }
-    .r-pct  { font-size: .92rem; font-weight: 700; color: var(--purple-lt); }
-    .r-cnt  { font-size: .78rem; color: var(--faint); margin-left: .2rem; }
-    .bar-wrap { height: 8px; background: var(--surface2); border-radius: 4px; }
-    .bar-fill {
-      height: 100%; border-radius: 4px;
-      background: linear-gradient(90deg, var(--purple), var(--purple-lt));
-      transition: width .45s ease;
+    .past-pill {
+      font-size: 11px; font-weight: 600;
+      padding: 3px 8px; border-radius: 999px;
+      background: var(--gray1); color: var(--gray3);
     }
-    .bar-fill.correct-bar { background: linear-gradient(90deg, #16a34a, #4ade80); }
-    .r-footer { margin-top: .75rem; font-size: .8rem; color: var(--faint); text-align: right; }
+    .result-opts { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .result-opt-row { display: flex; flex-direction: column; gap: 4px; }
+    .result-opt-top { display: flex; align-items: center; gap: 8px; }
+    .result-opt-letter {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--gray1); border: 1px solid var(--gray2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; color: var(--gray3); flex-shrink: 0;
+    }
+    .result-opt-letter.correct { background: var(--green); border-color: var(--green); color: #fff; }
+    .result-opt-name { flex: 1; font-size: 14px; color: var(--black); }
+    .result-opt-correct-tag { font-size: 11px; color: var(--green); font-weight: 600; }
+    .result-opt-right { display: flex; align-items: center; gap: 6px; }
+    .result-pct { font-size: 14px; font-weight: 500; color: var(--black); min-width: 36px; text-align: right; }
+    .result-cnt { font-size: 12px; color: var(--gray4); min-width: 28px; }
+    .bar-track { height: 4px; background: var(--gray2); border-radius: 2px; overflow: hidden; }
+    .bar-fill  { height: 100%; background: var(--black); border-radius: 2px; transition: width 0.45s cubic-bezier(0.4,0,0.2,1); }
+    .bar-fill.correct { background: var(--green); }
+    .result-footer {
+      padding: 10px 16px; border-top: 1px solid var(--gray2);
+      font-size: 12px; color: var(--gray4); text-align: right;
+    }
 
-    /* ── Encart classement live ── */
-    .ranking-panel {
-      background: var(--surface); border-radius: 14px;
-      border: 1px solid var(--border); padding: 1.25rem;
-      margin-bottom: 1.5rem;
+    .q-nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+    .q-nav-btn {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 1px solid var(--gray2); background: #fff;
+      font-size: 13px; font-weight: 500; color: var(--gray3);
+      cursor: pointer; transition: all 0.15s;
     }
-    .ranking-panel-title {
-      font-size: .75rem; font-weight: 700; color: var(--gold);
-      text-transform: uppercase; letter-spacing: .08em; margin-bottom: .75rem;
-    }
-    .mini-rank-list { display: flex; flex-direction: column; gap: .4rem; }
-    .mini-rank-row {
-      display: flex; align-items: center; gap: .6rem;
-      padding: .45rem .75rem; background: rgba(255,255,255,.04);
-      border-radius: 8px;
-    }
-    .mini-rank-pos { width: 22px; font-size: .82rem; font-weight: 700; color: var(--muted); flex-shrink: 0; }
-    .mini-rank-pos.gold   { color: var(--gold); }
-    .mini-rank-pos.silver { color: #94a3b8; }
-    .mini-rank-pos.bronze { color: #b45309; }
-    .mini-rank-name { flex: 1; font-size: .9rem; }
-    .mini-rank-score { font-size: .9rem; font-weight: 700; color: var(--purple-lt); }
+    .q-nav-btn.active { background: var(--black); border-color: var(--black); color: #fff; }
+    .q-nav-btn:not(.active):hover { border-color: var(--black); color: var(--black); }
 
-    .dash-empty { text-align: center; padding: 3rem 1rem; color: var(--faint); }
-    .proj-links {
-      display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
-      margin-bottom: 1.5rem; padding: .75rem 1rem;
-      background: var(--surface); border-radius: 10px;
-      border: 1px solid var(--border);
-    }
-    .proj-links a { text-decoration: none; }
+    .dash-empty { text-align: center; padding: 60px 24px; color: var(--gray4); font-size: 15px; }
   </style>
 </head>
 <body>
 
-<nav class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('editor')">✏️ Questions</button>
-  <button class="tab-btn"        onclick="switchTab('dashboard')">📊 Dashboard</button>
+<nav class="nav">
+  <div class="nav-logo">Quiz Mariage</div>
+  <button class="nav-tab active" onclick="switchTab('editor')">Questions</button>
+  <button class="nav-tab"        onclick="switchTab('dashboard')">Dashboard</button>
 </nav>
 
 <!-- ════ ÉDITEUR ════ -->
-<div id="tab-editor" class="tab-pane active">
+<div id="pane-editor" class="pane active">
+  <div class="section-head">
+    <div class="section-title">Questions du quiz</div>
+  </div>
   <div class="toolbar">
-    <button class="btn btn-purple"  onclick="addQuestion()">＋ Ajouter une question</button>
-    <button class="btn btn-outline" onclick="exportJSON()">⬇ Exporter JSON</button>
-    <button class="btn btn-outline" onclick="openImport()">⬆ Importer JSON</button>
+    <button class="btn btn-dark" onclick="addQuestion()">+ Ajouter</button>
+    <button class="btn btn-light" onclick="exportJSON()">Exporter JSON</button>
+    <button class="btn btn-light" onclick="openImport()">Importer JSON</button>
     <div class="toolbar-sep"></div>
-    <button class="btn btn-green"   onclick="saveToSupabase()">💾 Enregistrer dans Supabase</button>
+    <button class="btn btn-dark" onclick="saveToSupabase()">Enregistrer</button>
   </div>
   <div id="editor-list"></div>
 </div>
 
 <!-- ════ DASHBOARD ════ -->
-<div id="tab-dashboard" class="tab-pane">
+<div id="pane-dashboard" class="pane">
 
-  <div class="dash-header">
-    <div>
-      <div style="font-size:1.2rem;font-weight:600">💍 Quiz en direct</div>
-      <div style="font-size:.85rem;color:var(--muted);margin-top:.2rem">Résultats mis à jour en temps réel</div>
-    </div>
-    <span id="status-pill" class="status-pill pill-waiting">
-      <span class="dot"></span>
-      <span id="status-text">En attente</span>
+  <div class="status-row">
+    <div class="section-title">En direct</div>
+    <span id="status-chip" class="status-chip chip-wait">
+      <span class="chip-dot" id="chip-dot"></span>
+      <span id="chip-label">En attente</span>
     </span>
   </div>
 
-  <div class="controls">
-    <button class="btn btn-green"   id="btn-start"  onclick="startQuiz()">▶ Lancer</button>
-    <button class="btn btn-purple"  id="btn-next"   onclick="nextQuestion()" disabled>⏭ Suivante</button>
-    <button class="btn btn-red"     id="btn-end"    onclick="endQuiz()"      disabled>⏹ Terminer</button>
-    <button class="btn btn-gold"    id="btn-podium" onclick="triggerPodium()" disabled>🏆 Podium</button>
-    <button class="btn btn-gray"    id="btn-reset"  onclick="resetQuiz()">🔄 Reset</button>
-  </div>
-  <div class="proj-links">
-    <span style="font-size:.8rem;color:var(--muted)">📽 Ouvrir sur le rétro :</span>
-    <a href="./display.html" target="_blank" class="btn btn-outline" style="font-size:.82rem;padding:.4rem .9rem">📺 Affichage public</a>
-    <a href="./podium.html"  target="_blank" class="btn btn-outline" style="font-size:.82rem;padding:.4rem .9rem">🏆 Podium</a>
+  <div class="btn-row" style="margin-bottom:16px">
+    <button class="btn btn-green"  id="btn-start"  onclick="startQuiz()">Lancer</button>
+    <button class="btn btn-dark"   id="btn-next"   onclick="nextQuestion()" disabled>Suivante</button>
+    <button class="btn btn-light"  id="btn-end"    onclick="endQuiz()"      disabled>Terminer</button>
+    <button class="btn btn-gold"   id="btn-podium" onclick="triggerPodium()" disabled>Podium</button>
+    <button class="btn btn-light"  id="btn-reset"  onclick="resetQuiz()">Réinitialiser</button>
   </div>
 
-  <!-- Classement live -->
-  <div class="ranking-panel">
-    <div class="ranking-panel-title">🏆 Classement en cours</div>
-    <div class="mini-rank-list" id="mini-ranking">
-      <div style="color:var(--faint);font-size:.88rem">Aucun participant pour l'instant…</div>
+  <div class="proj-bar">
+    <span class="proj-label">Afficher sur le rétro :</span>
+    <a href="./display.html" target="_blank"><button class="btn btn-light" style="height:30px;font-size:13px">Affichage public</button></a>
+    <a href="./podium.html"  target="_blank"><button class="btn btn-light" style="height:30px;font-size:13px">Podium</button></a>
+  </div>
+
+  <div class="ranking-card">
+    <div class="ranking-card-head">Classement</div>
+    <div class="ranking-rows" id="mini-ranking">
+      <div class="rank-empty">Aucun participant pour l'instant.</div>
     </div>
   </div>
 
@@ -334,14 +381,14 @@
 </div>
 
 <!-- Modal import -->
-<div id="import-modal" class="modal-overlay hidden">
+<div id="import-modal" class="modal-bg hidden">
   <div class="modal">
-    <h3>⬆ Importer un JSON</h3>
-    <p>Format attendu : <code style="color:#c084fc">[{"text":"…","options":["A","B","C"],"correct_answer_index":0}, …]</code></p>
+    <h3>Importer un JSON</h3>
+    <p>Format : <code>[{"text":"…","options":["A","B","C"],"correct_answer_index":0}, …]</code></p>
     <textarea id="import-textarea" placeholder='[{"text":"Où se sont-ils rencontrés ?","options":["À l'\''école","Au travail","En vacances"],"correct_answer_index":1}]'></textarea>
     <div class="modal-actions">
-      <button class="btn btn-gray"   onclick="closeImport()">Annuler</button>
-      <button class="btn btn-purple" onclick="doImport()">Importer</button>
+      <button class="btn btn-light" onclick="closeImport()">Annuler</button>
+      <button class="btn btn-dark"  onclick="doImport()">Importer</button>
     </div>
   </div>
 </div>
@@ -350,46 +397,37 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
 const SUPABASE_URL  = window.SUPABASE_URL;
 const SUPABASE_ANON = window.SUPABASE_ANON;
 
 if (!SUPABASE_URL || SUPABASE_URL.includes("XXXXXXXX")) {
-  document.body.innerHTML = `<div style="font-family:system-ui;padding:2rem;color:#fca5a5;background:#1a0d2e;min-height:100vh">
-    <h2>⚠️ config.js non configuré</h2>
-    <p style="margin-top:1rem">Copiez <code>config.example.js</code> en <code>config.js</code> et renseignez vos clés Supabase.</p>
-  </div>`;
-  throw new Error("config.js manquant ou non configuré");
+  document.body.innerHTML = `<div style="font-family:system-ui;padding:3rem;max-width:520px;margin:0 auto"><h2 style="margin-bottom:1rem">Configuration manquante</h2><p style="color:#6e6e73">Copiez <code>config.example.js</code> en <code>config.js</code> et renseignez vos clés Supabase.</p></div>`;
+  throw new Error("config.js non configuré");
 }
 
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
 const LETTERS = ["A","B","C","D","E","F"];
-
-let questions   = [];
-let currentIdx  = -1;
-let viewIdx     = null;  // null = suivre la question en cours
-let voteCounts  = {};
 const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 
-// ════════ ONGLETS ════════
+let questions = [], currentIdx = -1, viewIdx = null, voteCounts = {};
+
+// ── Onglets ──
 window.switchTab = name => {
-  document.querySelectorAll(".tab-btn").forEach((b,i) =>
+  document.querySelectorAll(".nav-tab").forEach((b,i) =>
     b.classList.toggle("active", ["editor","dashboard"][i] === name));
-  document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
-  document.getElementById("tab-" + name).classList.add("active");
+  document.querySelectorAll(".pane").forEach(p => p.classList.remove("active"));
+  document.getElementById("pane-" + name).classList.add("active");
 };
 
-// ════════ TOAST ════════
+// ── Toast ──
 let toastTimer;
 function toast(msg, isError = false) {
   const el = document.getElementById("toast");
-  el.textContent = msg;
-  el.className = "show" + (isError ? " error" : "");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.className = "", 3000);
+  el.textContent = msg; el.className = "show" + (isError ? " error" : "");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.className = "", 3000);
 }
 
-// ════════ SYNC DOM → questions[] ════════
+// ── Sync DOM → questions[] ──
 function syncFromDOM() {
   questions.forEach((q, i) => {
     const ta = document.getElementById(`qtxt-${i}`);
@@ -401,377 +439,457 @@ function syncFromDOM() {
   });
 }
 
-// ════════ ÉDITEUR ════════
+// ── Éditeur ──
 window.addQuestion = () => {
   syncFromDOM();
   questions.push({ text: "", options: ["", ""], correct_answer_index: 0, position: questions.length });
   renderEditor();
-  setTimeout(() => {
-    document.querySelectorAll(".q-card-edit").at(-1)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, 50);
+  setTimeout(() => document.querySelectorAll(".q-item").at(-1)?.scrollIntoView({ behavior:"smooth", block:"start" }), 50);
 };
-
 window.removeQuestion = i => {
   if (!confirm(`Supprimer la question ${i+1} ?`)) return;
   syncFromDOM(); questions.splice(i, 1); renderEditor();
 };
-
 window.addOption = i => {
   if (questions[i].options.length >= 6) return;
   syncFromDOM(); questions[i].options.push(""); renderEditor();
 };
-
 window.removeOption = (qi, oi) => {
   if (questions[qi].options.length <= 2) return;
-  syncFromDOM();
-  questions[qi].options.splice(oi, 1);
-  // Ajuster correct_answer_index si nécessaire
+  syncFromDOM(); questions[qi].options.splice(oi, 1);
   if (questions[qi].correct_answer_index >= questions[qi].options.length)
     questions[qi].correct_answer_index = questions[qi].options.length - 1;
   renderEditor();
 };
-
 window.setCorrect = (qi, oi) => {
-  syncFromDOM();
-  questions[qi].correct_answer_index = oi;
-  // Mettre à jour visuellement sans re-render complet
-  const card = document.getElementById(`qcard-${qi}`);
-  card.querySelectorAll(".correct-btn").forEach((btn, j) => {
-    btn.classList.toggle("active", j === oi);
-    btn.title = j === oi ? "✅ Bonne réponse" : "Marquer comme bonne réponse";
-  });
-  const hint = document.getElementById(`correct-hint-${qi}`);
-  if (hint) hint.textContent = `✅ Bonne réponse : ${LETTERS[oi]}`;
+  syncFromDOM(); questions[qi].correct_answer_index = oi;
+  document.querySelectorAll(`#qitem-${qi} .opt-correct-btn`).forEach((b,j) => b.classList.toggle("active", j===oi));
+  const h = document.getElementById(`correct-hint-${qi}`);
+  if (h) h.textContent = `Bonne réponse : ${LETTERS[oi]}`;
 };
-
-window.toggleCard = i => document.getElementById(`qcard-${i}`).classList.toggle("collapsed");
-window.moveUp     = i => { if (!i) return; syncFromDOM(); [questions[i-1],questions[i]]=[questions[i],questions[i-1]]; renderEditor(); };
-window.moveDown   = i => { if (i>=questions.length-1) return; syncFromDOM(); [questions[i],questions[i+1]]=[questions[i+1],questions[i]]; renderEditor(); };
-
-window.updateCardTitle = i => {
-  const el = document.querySelector(`#qcard-${i} .q-card-title`);
+window.toggleQ  = i => document.getElementById(`qitem-${i}`).classList.toggle("open");
+window.moveUp   = i => { if (!i) return; syncFromDOM(); [questions[i-1],questions[i]]=[questions[i],questions[i-1]]; renderEditor(); };
+window.moveDown = i => { if (i>=questions.length-1) return; syncFromDOM(); [questions[i],questions[i+1]]=[questions[i+1],questions[i]]; renderEditor(); };
+window.updateQTitle = i => {
+  const el = document.querySelector(`#qitem-${i} .q-title`);
   if (!el) return;
-  const txt = questions[i].text.trim();
-  el.textContent = txt || "Nouvelle question…";
-  el.className = "q-card-title" + (txt ? "" : " placeholder");
+  const t = questions[i].text.trim();
+  el.textContent = t || "Nouvelle question…";
+  el.className = "q-title" + (t ? "" : " empty");
 };
 
 function renderEditor() {
-  const list = document.getElementById("editor-list");
+  const el = document.getElementById("editor-list");
   if (!questions.length) {
-    list.innerHTML = `<div class="empty-state"><div class="big">✏️</div>
-      <p>Aucune question.<br>Cliquez sur <strong>＋ Ajouter une question</strong>.</p></div>`;
+    el.innerHTML = `<div class="empty-state">Aucune question — cliquez sur + Ajouter pour commencer.</div>`;
     return;
   }
-  list.innerHTML = questions.map((q, i) => {
+  el.innerHTML = questions.map((q, i) => {
     const hasTitle = q.text.trim().length > 0;
-    return `
-    <div class="q-card-edit" id="qcard-${i}">
-      <div class="q-card-head" onclick="toggleCard(${i})">
-        <div class="q-num-badge">${i+1}</div>
-        <div class="q-card-title ${hasTitle ? "" : "placeholder"}">
-          ${hasTitle ? esc(q.text) : "Nouvelle question…"}</div>
-        <span class="chevron">▼</span>
+    return `<div class="q-item" id="qitem-${i}">
+      <div class="q-item-head" onclick="toggleQ(${i})">
+        <div class="q-num">${i+1}</div>
+        <div class="q-title ${hasTitle?"":"empty"}">${hasTitle ? esc(q.text) : "Nouvelle question…"}</div>
+        <span class="q-chevron">▾</span>
       </div>
-      <div class="q-card-body">
-        <div>
-          <div class="field-label">Question</div>
-          <textarea id="qtxt-${i}" placeholder="Ex : Où se sont-ils rencontrés ?"
-            oninput="questions[${i}].text=this.value;updateCardTitle(${i})"
-          >${esc(q.text)}</textarea>
+      <div class="q-item-body">
+        <div class="field-lbl">Question</div>
+        <textarea id="qtxt-${i}" placeholder="Saisissez votre question…" oninput="questions[${i}].text=this.value;updateQTitle(${i})">${esc(q.text)}</textarea>
+        <div class="field-lbl">Réponses — cliquez ✓ pour indiquer la bonne</div>
+        <div class="opt-rows" id="opts-${i}">
+          ${q.options.map((o,j) => `
+          <div class="opt-row">
+            <div class="opt-lbl">${LETTERS[j]}</div>
+            <input type="text" value="${esc(o)}" placeholder="Réponse ${LETTERS[j]}…" oninput="questions[${i}].options[${j}]=this.value"/>
+            <button class="opt-correct-btn ${q.correct_answer_index===j?"active":""}" onclick="setCorrect(${i},${j})" title="Marquer comme bonne réponse">✓</button>
+            ${q.options.length>2?`<button class="icon-btn" onclick="removeOption(${i},${j})">×</button>`:`<div style="width:28px"></div>`}
+          </div>`).join("")}
         </div>
-        <div>
-          <div class="field-label">
-            Réponses — cliquez sur ✓ pour marquer la bonne réponse
-          </div>
-          <div id="opts-${i}">
-            ${q.options.map((o, j) => `
-              <div class="opt-row">
-                <div class="opt-badge">${LETTERS[j]}</div>
-                <input type="text" value="${esc(o)}"
-                  placeholder="Réponse ${LETTERS[j]}…"
-                  oninput="questions[${i}].options[${j}]=this.value" />
-                <button class="correct-btn ${q.correct_answer_index===j ? "active":""}"
-                  onclick="setCorrect(${i},${j})"
-                  title="${q.correct_answer_index===j ? "✅ Bonne réponse" : "Marquer comme bonne réponse"}">✓</button>
-                ${q.options.length > 2
-                  ? `<button class="icon-btn" onclick="removeOption(${i},${j})">✕</button>`
-                  : '<div style="width:26px"></div>'}
-              </div>`).join("")}
-          </div>
-          <div class="correct-hint" id="correct-hint-${i}">
-            ✅ Bonne réponse : ${LETTERS[q.correct_answer_index]}
-          </div>
-          ${q.options.length < 6
-            ? `<button class="add-opt-btn" onclick="addOption(${i})">＋ Ajouter une réponse</button>` : ""}
-        </div>
-        <div class="q-card-footer">
-          <button class="btn btn-gray" style="padding:.35rem .7rem;font-size:.8rem"
-            onclick="moveUp(${i})" ${!i?"disabled":""}>↑</button>
-          <button class="btn btn-gray" style="padding:.35rem .7rem;font-size:.8rem"
-            onclick="moveDown(${i})" ${i===questions.length-1?"disabled":""}>↓</button>
-          <button class="btn btn-red"  style="padding:.35rem .7rem;font-size:.8rem"
-            onclick="removeQuestion(${i})">🗑 Supprimer</button>
+        <div class="correct-hint" id="correct-hint-${i}">Bonne réponse : ${LETTERS[q.correct_answer_index]}</div>
+        ${q.options.length<6?`<button class="add-opt-btn" onclick="addOption(${i})">+ Ajouter une réponse</button>`:""}
+        <div class="field-lbl" style="margin-top:14px">Photo (optionnelle)</div>
+        <div id="photo-zone-${i}">${renderPhotoZone(i)}</div>
+        <div class="q-item-footer">
+          <button class="btn btn-light" style="height:30px;font-size:13px" onclick="moveUp(${i})" ${!i?"disabled":""}>↑</button>
+          <button class="btn btn-light" style="height:30px;font-size:13px" onclick="moveDown(${i})" ${i===questions.length-1?"disabled":""}>↓</button>
+          <button class="btn btn-red"   style="height:30px;font-size:13px" onclick="removeQuestion(${i})">Supprimer</button>
         </div>
       </div>
     </div>`;
   }).join("");
 }
 
-// ── Export ──
 window.exportJSON = () => {
   if (!questions.length) { toast("Aucune question à exporter", true); return; }
   syncFromDOM();
-  const data = questions.map(q => ({ text: q.text, options: q.options, correct_answer_index: q.correct_answer_index }));
   const a = Object.assign(document.createElement("a"), {
-    href: URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"})),
-    download: "quiz-mariage.json"
+    href: URL.createObjectURL(new Blob([JSON.stringify(questions.map(q=>({text:q.text,options:q.options,correct_answer_index:q.correct_answer_index})),null,2)],{type:"application/json"})),
+    download:"quiz-mariage.json"
   });
-  a.click();
-  toast("JSON exporté !");
+  a.click(); toast("JSON exporté");
 };
 
-// ── Import ──
 window.openImport  = () => document.getElementById("import-modal").classList.remove("hidden");
 window.closeImport = () => document.getElementById("import-modal").classList.add("hidden");
 window.doImport    = () => {
-  const raw = document.getElementById("import-textarea").value.trim();
   try {
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) throw new Error("Doit être un tableau JSON");
+    const parsed = JSON.parse(document.getElementById("import-textarea").value.trim());
+    if (!Array.isArray(parsed)) throw new Error("Doit être un tableau");
     parsed.forEach((q,i) => {
-      if (typeof q.text !== "string") throw new Error(`Q${i+1} : "text" manquant`);
-      if (!Array.isArray(q.options) || q.options.length < 2) throw new Error(`Q${i+1} : "options" doit avoir ≥ 2 éléments`);
+      if (typeof q.text!=="string") throw new Error(`Q${i+1} : "text" manquant`);
+      if (!Array.isArray(q.options)||q.options.length<2) throw new Error(`Q${i+1} : options insuffisantes`);
     });
     if (questions.length && !confirm("Remplacer les questions actuelles ?")) return;
-    questions = parsed.map((q,i) => ({
-      text: q.text, options: q.options,
-      correct_answer_index: q.correct_answer_index ?? 0,
-      position: i
-    }));
+    questions = parsed.map((q,i)=>({text:q.text,options:q.options,correct_answer_index:q.correct_answer_index??0,position:i}));
     renderEditor(); closeImport();
     document.getElementById("import-textarea").value = "";
-    toast(`${questions.length} question(s) importée(s) ✓`);
-  } catch(e) { toast("JSON invalide : " + e.message, true); }
+    toast(`${questions.length} question(s) importée(s)`);
+  } catch(e) { toast("JSON invalide : "+e.message, true); }
 };
 
-// ── Save Supabase ──
+// ── Helpers photo ──
+function fmtSize(bytes) {
+  return bytes < 1024*1024 ? Math.round(bytes/1024)+" Ko" : (bytes/1024/1024).toFixed(1)+" Mo";
+}
+
+function renderPhotoZone(i) {
+  const q = questions[i];
+  // Photo déjà en base (URL existante)
+  if (q.photo_url && !q.pendingPhoto && !q.pendingDelete) {
+    return `<div class="photo-preview">
+      <img class="photo-thumb" src="${q.photo_url}" alt="photo question ${i+1}" onerror="this.style.display='none'"/>
+      <div class="photo-info">
+        <div class="photo-name">Photo enregistrée</div>
+        <div class="photo-size">Cliquez Remplacer pour changer</div>
+      </div>
+      <div class="photo-actions">
+        <button class="photo-replace-btn" onclick="triggerPhotoInput(${i})">Remplacer</button>
+        <button class="photo-delete-btn"  onclick="deletePhoto(${i})">Supprimer</button>
+      </div>
+      <input type="file" id="photo-input-${i}" accept="image/jpeg,image/png,image/webp" onchange="onPhotoSelected(${i}, this)"/>
+    </div>`;
+  }
+  // Photo sélectionnée localement (pas encore uploadée)
+  if (q.pendingPhoto) {
+    const url = URL.createObjectURL(q.pendingPhoto);
+    return `<div class="photo-preview">
+      <img class="photo-thumb" src="${url}" alt="aperçu"/>
+      <div class="photo-info">
+        <div class="photo-name">${q.pendingPhoto.name}</div>
+        <div class="photo-size">${fmtSize(q.pendingPhoto.size)} — sera uploadée à l'enregistrement</div>
+      </div>
+      <div class="photo-actions">
+        <button class="photo-replace-btn" onclick="triggerPhotoInput(${i})">Changer</button>
+        <button class="photo-delete-btn"  onclick="deletePhoto(${i})">Annuler</button>
+      </div>
+      <input type="file" id="photo-input-${i}" accept="image/jpeg,image/png,image/webp" onchange="onPhotoSelected(${i}, this)"/>
+    </div>`;
+  }
+  // Aucune photo
+  return `<div class="photo-zone" onclick="triggerPhotoInput(${i})">
+    <input type="file" id="photo-input-${i}" accept="image/jpeg,image/png,image/webp" onchange="onPhotoSelected(${i}, this)"/>
+    <div class="photo-zone-label"><strong>Choisir une image</strong><br>JPG, PNG ou WEBP — 5 Mo max</div>
+  </div>`;
+}
+
+window.triggerPhotoInput = i => {
+  document.getElementById(`photo-input-${i}`)?.click();
+};
+
+window.onPhotoSelected = (i, input) => {
+  const file = input.files?.[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast("Image trop lourde (max 5 Mo)", true); return; }
+  syncFromDOM();
+  questions[i].pendingPhoto  = file;
+  questions[i].pendingDelete = false;
+  document.getElementById(`photo-zone-${i}`).innerHTML = renderPhotoZone(i);
+};
+
+window.deletePhoto = i => {
+  syncFromDOM();
+  if (questions[i].photo_url) questions[i].pendingDelete = true;
+  questions[i].pendingPhoto = null;
+  questions[i].photo_url    = null;
+  document.getElementById(`photo-zone-${i}`).innerHTML = renderPhotoZone(i);
+};
+
+async function resizeImage(file, maxWidth = 1200) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const ratio  = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement("canvas");
+      canvas.width  = Math.round(img.width  * ratio);
+      canvas.height = Math.round(img.height * ratio);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(
+        blob => resolve(new File([blob], "photo.jpg", { type: "image/jpeg" })),
+        "image/jpeg", 0.85
+      );
+    };
+    img.onerror = () => resolve(file); // fallback sans resize
+    img.src = url;
+  });
+}
+
+async function uploadPhoto(file, qId) {
+  // file  : objet File JS (pendingPhoto)
+  // qId   : ID de la question déjà insérée en base
+  const resized = await resizeImage(file);
+  const path    = `${qId}/${Date.now()}.jpg`;
+
+  console.log("[upload] path =", path, "| size =", resized.size);
+
+  const { data, error } = await sb.storage
+    .from("quiz-photos")
+    .upload(path, resized, { contentType: "image/jpeg", upsert: true });
+
+  if (error) {
+    console.error("[upload] erreur Supabase Storage :", error);
+    toast(`Erreur upload photo : ${error.message}`, true);
+    return null;
+  }
+
+  console.log("[upload] succès :", data);
+  const { data: { publicUrl } } = sb.storage.from("quiz-photos").getPublicUrl(path);
+  console.log("[upload] publicUrl =", publicUrl);
+  return publicUrl;
+}
+
 window.saveToSupabase = async () => {
   if (!questions.length) { toast("Aucune question à enregistrer", true); return; }
   syncFromDOM();
-  for (let i = 0; i < questions.length; i++) {
-    if (!questions[i].text.trim())              { toast(`Q${i+1} : texte vide`, true); return; }
+  for (let i=0;i<questions.length;i++) {
+    if (!questions[i].text.trim()) { toast(`Q${i+1} : texte vide`, true); return; }
     if (questions[i].options.some(o=>!o.trim())) { toast(`Q${i+1} : réponse vide`, true); return; }
   }
   const btn = document.querySelector("button[onclick='saveToSupabase()']");
   btn.disabled = true; btn.textContent = "Enregistrement…";
+  // ── Étape 1 : Supprimer les photos marquées pour suppression dans Storage ──
+  for (const q of questions) {
+    if ((q.pendingDelete || q.pendingPhoto) && q.photo_url) {
+      const oldPath = q.photo_url.split("/quiz-photos/")[1];
+      if (oldPath) {
+        const { error: delErr } = await sb.storage.from("quiz-photos").remove([oldPath]);
+        if (delErr) console.warn("[save] suppression ancienne photo :", delErr.message);
+      }
+    }
+  }
 
+  // ── Étape 2 : Supprimer toutes les questions et les réinsérer ──
   await sb.from("quiz_questions").delete().neq("id", 0);
-  const rows = questions.map((q,i) => ({
-    text: q.text, options: q.options,
-    correct_answer_index: q.correct_answer_index,
-    position: i
-  }));
-  const { data, error } = await sb.from("quiz_questions").insert(rows).select();
-  btn.disabled = false; btn.innerHTML = "💾 Enregistrer dans Supabase";
 
-  if (error) { toast("Erreur : " + error.message, true); return; }
-  questions = (data||[]).sort((a,b) => a.position - b.position);
+  const rows = questions.map((q, i) => ({
+    text:                 q.text,
+    options:              q.options,
+    correct_answer_index: q.correct_answer_index,
+    position:             i,
+    photo_url:            (q.pendingDelete || q.pendingPhoto) ? null : (q.photo_url || null)
+    // photo_url est null ici pour les nouvelles photos ; on le met à jour après l'upload
+  }));
+
+  const { data: inserted, error: insErr } = await sb.from("quiz_questions").insert(rows).select();
+  if (insErr) {
+    btn.disabled = false; btn.textContent = "Enregistrer";
+    toast("Erreur insertion : " + insErr.message, true);
+    return;
+  }
+
+  const sortedInserted = (inserted || []).sort((a, b) => a.position - b.position);
+
+  // ── Étape 3 : Uploader les nouvelles photos et mettre à jour photo_url ──
+  for (let i = 0; i < questions.length; i++) {
+    const q   = questions[i];
+    const row = sortedInserted[i];
+    if (!row || !q.pendingPhoto) continue;
+
+    console.log(`[save] upload photo Q${i+1}, qId=${row.id}`);
+    const publicUrl = await uploadPhoto(q.pendingPhoto, row.id);
+
+    if (publicUrl) {
+      const { error: updErr } = await sb.from("quiz_questions")
+        .update({ photo_url: publicUrl })
+        .eq("id", row.id);
+      if (updErr) {
+        console.error("[save] update photo_url :", updErr.message);
+        toast(`Erreur mise à jour photo Q${i+1}`, true);
+      } else {
+        sortedInserted[i].photo_url = publicUrl;
+        console.log(`[save] photo_url mis à jour Q${i+1} :`, publicUrl);
+      }
+    }
+  }
+
+  // ── Étape 4 : Resynchroniser l'état local ──
+  const { data: fresh } = await sb.from("quiz_questions").select("*").order("position");
+  questions = (fresh || sortedInserted).map(q => ({ ...q, pendingPhoto: null, pendingDelete: false }));
+
+  btn.disabled = false; btn.textContent = "Enregistrer";
   renderEditor(); renderNav(); renderResults();
-  toast(`${questions.length} question(s) enregistrée(s) ✓`);
+  toast(`${questions.length} question(s) enregistrée(s)`);
 };
 
-// ════════ DASHBOARD ════════
+// ── Dashboard ──
 async function setQuizState(status, idx) {
-  const { error } = await sb.from("quiz_state")
-    .update({ status, current_question_index: idx }).eq("id", 1);
-  if (error) toast("Erreur Supabase : " + error.message, true);
+  const { error } = await sb.from("quiz_state").update({status,current_question_index:idx}).eq("id",1);
+  if (error) toast("Erreur : "+error.message, true);
 }
-
-window.startQuiz    = () => { if (!questions.length) { toast("Enregistrez d'abord les questions", true); return; } currentIdx=0; setQuizState("question",0); };
+window.startQuiz    = () => { if (!questions.length){toast("Enregistrez d'abord les questions",true);return;} currentIdx=0; setQuizState("question",0); };
 window.nextQuestion = () => { currentIdx++; if (currentIdx>=questions.length) setQuizState("done",currentIdx); else setQuizState("question",currentIdx); };
 window.endQuiz      = () => setQuizState("done", currentIdx);
-window.showPodium   = () => setQuizState("podium", currentIdx);
+window.triggerPodium = async () => { await setQuizState("podium", currentIdx); window.open("./podium.html","_blank"); };
 window.resetQuiz    = async () => {
   if (!confirm("Réinitialiser TOUS les votes et scores ?")) return;
   await sb.from("quiz_votes").delete().neq("id",0);
   await sb.from("quiz_players").delete().neq("id",0);
   await setQuizState("waiting",-1);
-  currentIdx=-1; voteCounts={};
-  if (viewIdx === null || viewIdx > currentIdx) viewIdx = null;
-  renderNav(); renderResults(); refreshMiniRanking();
+  currentIdx=-1; viewIdx=null; voteCounts={};
+  renderNav(); renderResults(); refreshRanking();
   toast("Quiz réinitialisé");
 };
 
-// ── Realtime état ──
 sb.channel("admin_state")
-  .on("postgres_changes",
-    { event:"UPDATE", schema:"public", table:"quiz_state", filter:"id=eq.1" },
-    p => applyState(p.new))
+  .on("postgres_changes",{event:"UPDATE",schema:"public",table:"quiz_state",filter:"id=eq.1"}, p=>applyState(p.new))
   .subscribe();
 
 function applyState(state) {
   currentIdx = state.current_question_index ?? -1;
-  const s    = state.status;
-  const pill = document.getElementById("status-pill");
-  const txt  = document.getElementById("status-text");
-  const bs = document.getElementById("btn-start");
-  const bn = document.getElementById("btn-next");
-  const be = document.getElementById("btn-end");
-  const bp = document.getElementById("btn-podium");
-
-  const cfg = {
-    waiting: { cls:"pill-waiting", label:"En attente",   blink:false, start:false, next:true, end:true, pod:true },
-    question:{ cls:"pill-live",    label:`Q${currentIdx+1} en cours`, blink:true, start:true, next:false, end:false, pod:true },
-    done:    { cls:"pill-done",    label:"Terminé",       blink:false, start:true, next:true, end:true, pod:false },
-    podium:  { cls:"pill-podium",  label:"Podium 🏆",    blink:true,  start:true, next:true, end:true, pod:true },
+  const s = state.status;
+  const chip = document.getElementById("status-chip");
+  const dot  = document.getElementById("chip-dot");
+  const lbl  = document.getElementById("chip-label");
+  const cfgs = {
+    waiting:{ cls:"chip-wait",   label:"En attente",        blink:false, start:false,next:true, end:true, pod:true  },
+    question:{cls:"chip-live",   label:`Q${currentIdx+1} en cours`, blink:true, start:true, next:false,end:false,pod:true },
+    done:   { cls:"chip-done",   label:"Terminé",           blink:false, start:true, next:true, end:true, pod:false },
+    podium: { cls:"chip-podium", label:"Podium",            blink:true,  start:true, next:true, end:true, pod:true  },
   };
-  const c = cfg[s] || cfg.waiting;
-  pill.className = "status-pill " + c.cls;
-  txt.textContent = c.label;
-  pill.querySelector(".dot").classList.toggle("blink", c.blink);
-  bs.disabled = c.start; bn.disabled = c.next; be.disabled = c.end; bp.disabled = c.pod;
-
+  const c = cfgs[s] || cfgs.waiting;
+  chip.className = "status-chip " + c.cls;
+  lbl.textContent = c.label;
+  dot.classList.toggle("blink", c.blink);
+  document.getElementById("btn-start").disabled  = c.start;
+  document.getElementById("btn-next").disabled   = c.next;
+  document.getElementById("btn-end").disabled    = c.end;
+  document.getElementById("btn-podium").disabled = c.pod;
+  if (viewIdx===null||viewIdx>currentIdx) viewIdx=null;
   renderNav(); renderResults();
 }
 
-// ── Realtime votes ──
 sb.channel("admin_votes")
-  .on("postgres_changes",
-    { event:"INSERT", schema:"public", table:"quiz_votes" },
-    p => {
-      const { question_id, answer_index } = p.new;
-      if (!voteCounts[question_id]) voteCounts[question_id] = {};
-      voteCounts[question_id][answer_index] = (voteCounts[question_id][answer_index]||0)+1;
-      refreshCard(question_id);
-    })
-  .subscribe();
+  .on("postgres_changes",{event:"INSERT",schema:"public",table:"quiz_votes"}, p=>{
+    const {question_id,answer_index}=p.new;
+    if (!voteCounts[question_id]) voteCounts[question_id]={};
+    voteCounts[question_id][answer_index]=(voteCounts[question_id][answer_index]||0)+1;
+    refreshCard(question_id);
+  }).subscribe();
 
-// ── Realtime scores ──
 sb.channel("admin_players")
-  .on("postgres_changes",
-    { event:"*", schema:"public", table:"quiz_players" },
-    () => refreshMiniRanking())
+  .on("postgres_changes",{event:"*",schema:"public",table:"quiz_players"}, ()=>refreshRanking())
   .subscribe();
 
-// ── Classement mini ──
-async function refreshMiniRanking() {
-  const { data } = await sb.from("quiz_players")
-    .select("username,score")
-    .order("score",{ascending:false})
-    .order("created_at",{ascending:true})
-    .limit(10);
+function fmtTime(ms) {
+  if (!ms) return "";
+  const s = Math.round(ms / 1000);
+  return s < 60 ? `${s}s` : `${Math.floor(s/60)}m${String(s%60).padStart(2,"0")}s`;
+}
 
-  const posClass = ["gold","silver","bronze"];
-  const medals   = ["🥇","🥈","🥉"];
+async function refreshRanking() {
+  const {data} = await sb.from("quiz_players")
+    .select("username,score,total_time_ms")
+    .order("score",        { ascending: false })
+    .order("total_time_ms",{ ascending: true  })  // départage : plus rapide gagne
+    .limit(10);
+  const medals = ["🥇","🥈","🥉"];
   const el = document.getElementById("mini-ranking");
-  if (!data || !data.length) {
-    el.innerHTML = `<div style="color:var(--faint);font-size:.88rem">Aucun participant pour l'instant…</div>`;
-    return;
-  }
-  el.innerHTML = data.map((p,i) => `
-    <div class="mini-rank-row">
-      <div class="mini-rank-pos ${posClass[i]||""}">${i<3?medals[i]:i+1}</div>
-      <div class="mini-rank-name">${esc(p.username)}</div>
-      <div class="mini-rank-score">${p.score} pt${p.score!==1?"s":""}</div>
+  if (!data||!data.length) { el.innerHTML=`<div class="rank-empty">Aucun participant pour l'instant.</div>`; return; }
+  el.innerHTML = data.map((p,i)=>`
+    <div class="rank-row">
+      <div class="rank-pos">${i<3?medals[i]:i+1}</div>
+      <div class="rank-name">${esc(p.username)}</div>
+      <div class="rank-score">
+        ${p.score} pt${p.score!==1?"s":""}
+        ${p.total_time_ms ? `<span style="font-size:11px;color:var(--gray4);margin-left:4px">${fmtTime(p.total_time_ms)}</span>` : ""}
+      </div>
     </div>`).join("");
 }
 
-// ── Résultats ──
+window.jumpTo = i => { viewIdx=i; renderResults(); };
+
 function renderNav() {
-  document.getElementById("q-nav").innerHTML = questions.map((_,i) =>
-    `<button class="q-nav-btn ${i===currentIdx?"active":""}"
-      onclick="jumpTo(${i})">${i+1}</button>`
+  document.getElementById("q-nav").innerHTML = questions.map((_,i)=>
+    `<button class="q-nav-btn ${i===currentIdx?"active":""}" onclick="jumpTo(${i})">${i+1}</button>`
   ).join("");
 }
 
-// Saute à une question précédente pour consulter ses résultats
-window.jumpTo = i => { viewIdx = i; renderResults(); };
-
 function renderResults() {
   const c = document.getElementById("results-container");
-  if (!questions.length) {
-    c.innerHTML = `<div class="dash-empty">Aucune question enregistrée.<br>Allez dans <strong>✏️ Questions</strong>.</div>`;
-    return;
-  }
-
-  // Par défaut on affiche la question en cours, sinon celle sélectionnée
-  const idx = viewIdx !== null ? viewIdx : currentIdx;
-  if (idx < 0 || idx >= questions.length) {
-    c.innerHTML = `<div class="dash-empty">Quiz non démarré.</div>`;
-    return;
-  }
-
+  if (!questions.length) { c.innerHTML=`<div class="dash-empty">Aucune question enregistrée.</div>`; return; }
+  const idx = viewIdx!==null ? viewIdx : currentIdx;
+  if (idx<0||idx>=questions.length) { c.innerHTML=`<div class="dash-empty">Quiz non démarré.</div>`; return; }
   const q = questions[idx];
   c.innerHTML = `
-    <div class="result-card is-live" id="rc-current">
-      <div class="r-label">
-        Question ${idx+1} / ${questions.length}
-        ${idx===currentIdx?'<span class="live-badge-sm">EN COURS</span>':'<span class="live-badge-sm" style="background:#1e3a5f;color:#93c5fd">PASSÉE</span>'}
+    <div class="result-card ${idx===currentIdx?"live":""}">
+      <div class="result-head">
+        <div class="result-head-left">
+          <div class="result-qlabel">Question ${idx+1} / ${questions.length}</div>
+          <div class="result-qtext">${esc(q.text)||"(sans titre)"}</div>
+        </div>
+        ${idx===currentIdx?'<span class="live-pill">En cours</span>':`<span class="past-pill">Passée</span>`}
       </div>
-      <div class="r-text">${esc(q.text)||"(sans titre)"}</div>
-      <div class="r-rows">
-        ${(q.options||[]).map((o,j) => `
-          <div class="r-row">
-            <div class="r-top">
-              <span class="r-opt">
-                ${LETTERS[j]}. ${esc(o)}
-                ${j===q.correct_answer_index?'<span class="r-correct-tag">✓ bonne réponse</span>':""}
-              </span>
-              <span>
-                <span class="r-pct" id="pct-${q.id}-${j}">0%</span>
-                <span class="r-cnt" id="cnt-${q.id}-${j}">(0)</span>
-              </span>
+      <div class="result-opts">
+        ${(q.options||[]).map((o,j)=>`
+        <div class="result-opt-row">
+          <div class="result-opt-top">
+            <div class="result-opt-letter ${j===q.correct_answer_index?"correct":""}">${LETTERS[j]}</div>
+            <div class="result-opt-name">${esc(o)}</div>
+            ${j===q.correct_answer_index?'<span class="result-opt-correct-tag">Bonne réponse</span>':""}
+            <div class="result-opt-right">
+              <span class="result-pct" id="pct-${q.id}-${j}">—</span>
+              <span class="result-cnt" id="cnt-${q.id}-${j}"></span>
             </div>
-            <div class="bar-wrap">
-              <div class="bar-fill ${j===q.correct_answer_index?"correct-bar":""}"
-                id="bar-${q.id}-${j}" style="width:0%"></div>
-            </div>
-          </div>`).join("")}
+          </div>
+          <div class="bar-track"><div class="bar-fill ${j===q.correct_answer_index?"correct":""}" id="bar-${q.id}-${j}" style="width:0%"></div></div>
+        </div>`).join("")}
       </div>
-      <div class="r-footer" id="tot-${q.id}">0 vote(s)</div>
+      <div class="result-footer" id="tot-${q.id}">0 vote</div>
     </div>`;
-
   refreshCard(q.id);
 }
 
 function refreshCard(qId) {
-  const q = questions.find(q => q.id===qId);
-  if (!q) return;
-  const counts = voteCounts[qId] || {};
+  const q = questions.find(q=>q.id===qId); if (!q) return;
+  const counts = voteCounts[qId]||{};
   const total  = Object.values(counts).reduce((a,b)=>a+b,0);
-  q.options.forEach((_,j) => {
-    const c   = counts[j]||0;
-    const pct = total>0 ? Math.round(c/total*100) : 0;
-    const p = document.getElementById(`pct-${qId}-${j}`);
-    const n = document.getElementById(`cnt-${qId}-${j}`);
-    const b = document.getElementById(`bar-${qId}-${j}`);
-    if (p) p.textContent = pct+"%";
-    if (n) n.textContent = `(${c})`;
-    if (b) b.style.width  = pct+"%";
+  q.options.forEach((_,j)=>{
+    const c=counts[j]||0, pct=total>0?Math.round(c/total*100):0;
+    const p=document.getElementById(`pct-${qId}-${j}`);
+    const n=document.getElementById(`cnt-${qId}-${j}`);
+    const b=document.getElementById(`bar-${qId}-${j}`);
+    if(p) p.textContent=total>0?pct+"%":"—";
+    if(n) n.textContent=total>0?`(${c})`:"";
+    if(b) b.style.width=pct+"%";
   });
-  const t = document.getElementById(`tot-${qId}`);
-  if (t) t.textContent = `${total} vote(s)`;
+  const t=document.getElementById(`tot-${qId}`);
+  if(t) t.textContent=`${total} vote${total!==1?"s":""}`;
 }
 
-// ════════ INIT ════════
 async function init() {
-  const { data: qs } = await sb.from("quiz_questions").select("*").order("position");
-  questions = qs || [];
+  const {data:qs} = await sb.from("quiz_questions").select("*").order("position");
+  questions = (qs||[]).map(q => ({ ...q, pendingPhoto: null, pendingDelete: false }));
   renderEditor();
-
-  const { data: state } = await sb.from("quiz_state").select("*").eq("id",1).single();
+  const {data:state} = await sb.from("quiz_state").select("*").eq("id",1).single();
   if (state) applyState(state);
-
-  const { data: votes } = await sb.from("quiz_votes").select("question_id,answer_index");
-  (votes||[]).forEach(({question_id,answer_index}) => {
-    if (!voteCounts[question_id]) voteCounts[question_id]={};
-    voteCounts[question_id][answer_index] = (voteCounts[question_id][answer_index]||0)+1;
+  const {data:votes} = await sb.from("quiz_votes").select("question_id,answer_index");
+  (votes||[]).forEach(({question_id,answer_index})=>{
+    if(!voteCounts[question_id]) voteCounts[question_id]={};
+    voteCounts[question_id][answer_index]=(voteCounts[question_id][answer_index]||0)+1;
   });
-
-  renderNav(); renderResults(); refreshMiniRanking();
+  renderNav(); renderResults(); refreshRanking();
 }
-
 init();
 </script>
 </body>
