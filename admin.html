@@ -446,9 +446,35 @@ window.addQuestion = () => {
   renderEditor();
   setTimeout(() => document.querySelectorAll(".q-item").at(-1)?.scrollIntoView({ behavior:"smooth", block:"start" }), 50);
 };
-window.removeQuestion = i => {
-  if (!confirm(`Supprimer la question ${i+1} ?`)) return;
-  syncFromDOM(); questions.splice(i, 1); renderEditor();
+window.removeQuestion = async i => {
+  if (!confirm(`Supprimer la question ${i+1} ? Cette action est immédiate et définitive.`)) return;
+  syncFromDOM();
+  const q = questions[i];
+
+  // Si la question existe déjà en base (a un id), suppression immédiate
+  if (q.id) {
+    const { error } = await sb.from("quiz_questions").delete().eq("id", q.id);
+    if (error) { toast("Erreur suppression : " + error.message, true); return; }
+
+    // Supprimer aussi sa photo dans Storage si elle existe
+    if (q.photo_url) {
+      const oldPath = q.photo_url.split("/quiz-photos/")[1];
+      if (oldPath) await sb.storage.from("quiz-photos").remove([oldPath]);
+    }
+    toast(`Question ${i+1} supprimée`);
+  }
+
+  questions.splice(i, 1);
+
+  // Réindexer les positions des questions restantes en base
+  for (let p = 0; p < questions.length; p++) {
+    if (questions[p].id) {
+      await sb.from("quiz_questions").update({ position: p }).eq("id", questions[p].id);
+    }
+    questions[p].position = p;
+  }
+
+  renderEditor(); renderNav(); renderResults();
 };
 window.addOption = i => {
   if (questions[i].options.length >= 6) return;
