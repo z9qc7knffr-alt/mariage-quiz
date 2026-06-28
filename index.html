@@ -299,13 +299,42 @@ loginInput.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); 
 window.doLogin = async () => {
   const name = loginInput.value.trim();
   if (name.length < 2) { document.getElementById("login-error").textContent = "Entrez au moins 2 caractères."; return; }
+
   const btn = document.getElementById("login-btn");
+  const errEl = document.getElementById("login-error");
+  errEl.textContent = "";
   btn.disabled = true;
+
+  // Vérifier si ce pseudo est déjà pris par un AUTRE appareil
+  // (comparaison insensible à la casse via ilike, alignée sur l'index unique côté DB)
+  const { data: existingPlayer } = await sb.from("quiz_players")
+    .select("device_id, username")
+    .ilike("username", name)
+    .maybeSingle();
+
+  if (existingPlayer && existingPlayer.device_id !== deviceId) {
+    errEl.textContent = `Le pseudo "${name}" est déjà pris. Choisissez-en un autre.`;
+    btn.disabled = false;
+    return;
+  }
+
   const { error } = await sb.from("quiz_players").upsert(
     { device_id: deviceId, username: name, score: 0 },
     { onConflict: "device_id" }
   );
-  if (error) { document.getElementById("login-error").textContent = "Erreur de connexion, réessayez."; btn.disabled = false; return; }
+
+  if (error) {
+    // 23505 = violation de la contrainte unique sur le pseudo
+    // (cas rare : deux joueurs valident le même pseudo au même instant)
+    if (error.code === "23505") {
+      errEl.textContent = `Le pseudo "${name}" vient d'être pris. Choisissez-en un autre.`;
+    } else {
+      errEl.textContent = "Erreur de connexion, réessayez.";
+    }
+    btn.disabled = false;
+    return;
+  }
+
   username = name;
   localStorage.setItem("mq_username", name);
   btn.disabled = false;
