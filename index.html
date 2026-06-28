@@ -307,10 +307,16 @@ window.doLogin = async () => {
 
   // Vérifier si ce pseudo est déjà pris par un AUTRE appareil
   // (comparaison insensible à la casse via ilike, alignée sur l'index unique côté DB)
-  const { data: existingPlayer } = await sb.from("quiz_players")
+  const { data: existingPlayer, error: checkErr } = await sb.from("quiz_players")
     .select("device_id, username")
     .ilike("username", name)
     .maybeSingle();
+
+  if (checkErr) {
+    console.error("[doLogin] erreur vérification pseudo:", checkErr);
+    // On ne bloque pas le login pour une erreur de lecture — l'upsert
+    // ci-dessous reste protégé par la contrainte unique en base
+  }
 
   if (existingPlayer && existingPlayer.device_id !== deviceId) {
     errEl.textContent = `Le pseudo "${name}" est déjà pris. Choisissez-en un autre.`;
@@ -324,12 +330,20 @@ window.doLogin = async () => {
   );
 
   if (error) {
-    // 23505 = violation de la contrainte unique sur le pseudo
-    // (cas rare : deux joueurs valident le même pseudo au même instant)
-    if (error.code === "23505") {
-      errEl.textContent = `Le pseudo "${name}" vient d'être pris. Choisissez-en un autre.`;
+    console.error("[doLogin] erreur upsert quiz_players:", error);
+    // Détection robuste de la violation de contrainte unique sur le pseudo,
+    // quelle que soit la façon dont Supabase/PostgREST structure l'erreur
+    const msg = (error.message || "").toLowerCase();
+    const isDuplicate =
+      error.code === "23505" ||
+      msg.includes("duplicate") ||
+      msg.includes("unique") ||
+      msg.includes("quiz_players_username_unique");
+
+    if (isDuplicate) {
+      errEl.textContent = `Le pseudo "${name}" est déjà pris. Choisissez-en un autre.`;
     } else {
-      errEl.textContent = "Erreur de connexion, réessayez.";
+      errEl.textContent = "Erreur de connexion : " + (error.message || "réessayez.");
     }
     btn.disabled = false;
     return;
