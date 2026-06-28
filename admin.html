@@ -8,9 +8,9 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --black:  #1d1d1f; --gray1: #f5f5f7; --gray2: #e8e8ed;
-      --gray3:  #6e6e73; --gray4: #aeaeb2;
-      --accent: #0071e3; --green: #34c759; --red: #ff3b30; --gold: #ff9f0a;
+      --black:  #1d1d1f; --gray1: #fdfaf2; --gray2: #ece3c8;
+      --gray3:  #8a8a86; --gray4: #c9c4b4;
+      --accent: #c9a227; --green: #1d8a4a; --red: #c0392b; --gold: #c9a227; --gold2: #e8cf6e;
       --radius: 12px;
     }
     html { font-size: 16px; }
@@ -35,7 +35,7 @@
       cursor: pointer; border-bottom: 2px solid transparent;
       transition: color 0.15s, border-color 0.15s; font-family: inherit;
     }
-    .nav-tab.active { color: var(--black); border-bottom-color: var(--black); }
+    .nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
 
     /* ── Layout ── */
     .pane { display: none; max-width: 720px; margin: 0 auto; padding: 32px 24px 80px; }
@@ -91,7 +91,7 @@
     .q-item-head:hover { background: var(--gray1); }
     .q-num {
       width: 26px; height: 26px; border-radius: 50%;
-      background: var(--black); color: #fff;
+      background: linear-gradient(135deg, var(--gold2), var(--gold)); color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-size: 12px; font-weight: 600; flex-shrink: 0;
     }
@@ -232,6 +232,22 @@
     .chip-dot.blink { animation: blink 1.2s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
+    .duration-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-radius: var(--radius);
+      border: 1px solid var(--gray2); background: #fff;
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .duration-row label { font-size: 13px; color: var(--gray3); font-weight: 500; }
+    .duration-row input[type=number] {
+      width: 70px; height: 32px; padding: 0 10px;
+      border: 1px solid var(--gray2); border-radius: 8px;
+      font-size: 14px; color: var(--black); text-align: center;
+      font-family: inherit;
+    }
+    .duration-row input[type=number]:focus { outline: none; border-color: var(--black); }
+    .duration-unit { font-size: 13px; color: var(--gray4); margin-right: 8px; }
+
     .proj-bar {
       display: flex; align-items: center; gap: 10px;
       padding: 12px 16px; border-radius: var(--radius);
@@ -300,7 +316,7 @@
     .result-pct { font-size: 14px; font-weight: 500; color: var(--black); min-width: 36px; text-align: right; }
     .result-cnt { font-size: 12px; color: var(--gray4); min-width: 28px; }
     .bar-track { height: 4px; background: var(--gray2); border-radius: 2px; overflow: hidden; }
-    .bar-fill  { height: 100%; background: var(--black); border-radius: 2px; transition: width 0.45s cubic-bezier(0.4,0,0.2,1); }
+    .bar-fill  { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); border-radius: 2px; transition: width 0.45s cubic-bezier(0.4,0,0.2,1); }
     .bar-fill.correct { background: var(--green); }
     .result-footer {
       padding: 10px 16px; border-top: 1px solid var(--gray2);
@@ -362,9 +378,16 @@
     <button class="btn btn-light"  id="btn-reset"  onclick="resetQuiz()">Réinitialiser</button>
   </div>
 
+  <div class="duration-row">
+    <label for="duration-input">Temps par question</label>
+    <input type="number" id="duration-input" min="5" max="120" value="20" />
+    <span class="duration-unit">secondes</span>
+    <button class="btn btn-light" style="height:30px;font-size:13px" onclick="saveDuration()">Appliquer</button>
+  </div>
+
   <div class="proj-bar">
     <span class="proj-label">Afficher sur le rétro :</span>
-    <a href="./display.html" target="_blank"><button class="btn btn-light" style="height:30px;font-size:13px">Affichage public</button></a>
+    <a href="./welcome.html" target="_blank"><button class="btn btn-light" style="height:30px;font-size:13px">Affichage public</button></a>
     <a href="./podium.html"  target="_blank"><button class="btn btn-light" style="height:30px;font-size:13px">Podium</button></a>
   </div>
 
@@ -760,9 +783,21 @@ window.saveToSupabase = async () => {
 
 // ── Dashboard ──
 async function setQuizState(status, idx) {
-  const { error } = await sb.from("quiz_state").update({status,current_question_index:idx}).eq("id",1);
+  const payload = { status, current_question_index: idx };
+  // À chaque nouvelle question, on (re)pose l'horodatage de départ
+  // pour synchroniser le décompte sur tous les écrans
+  if (status === "question") payload.question_started_at = new Date().toISOString();
+  const { error } = await sb.from("quiz_state").update(payload).eq("id",1);
   if (error) toast("Erreur : "+error.message, true);
 }
+
+window.saveDuration = async () => {
+  const val = parseInt(document.getElementById("duration-input").value, 10);
+  if (!val || val < 5 || val > 120) { toast("Durée invalide (5 à 120s)", true); return; }
+  const { error } = await sb.from("quiz_state").update({ question_duration_sec: val }).eq("id", 1);
+  if (error) { toast("Erreur : " + error.message, true); return; }
+  toast(`Durée fixée à ${val}s`);
+};
 window.startQuiz    = () => { if (!questions.length){toast("Enregistrez d'abord les questions",true);return;} currentIdx=0; setQuizState("question",0); };
 window.nextQuestion = () => { currentIdx++; if (currentIdx>=questions.length) setQuizState("done",currentIdx); else setQuizState("question",currentIdx); };
 window.endQuiz      = () => setQuizState("done", currentIdx);
@@ -908,7 +943,12 @@ async function init() {
   questions = (qs||[]).map(q => ({ ...q, pendingPhoto: null, pendingDelete: false }));
   renderEditor();
   const {data:state} = await sb.from("quiz_state").select("*").eq("id",1).single();
-  if (state) applyState(state);
+  if (state) {
+    applyState(state);
+    if (state.question_duration_sec) {
+      document.getElementById("duration-input").value = state.question_duration_sec;
+    }
+  }
   const {data:votes} = await sb.from("quiz_votes").select("question_id,answer_index");
   (votes||[]).forEach(({question_id,answer_index})=>{
     if(!voteCounts[question_id]) voteCounts[question_id]={};

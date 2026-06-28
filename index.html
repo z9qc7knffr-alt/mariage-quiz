@@ -10,14 +10,16 @@
 
     :root {
       --black:   #1d1d1f;
-      --gray1:   #f5f5f7;
-      --gray2:   #e8e8ed;
-      --gray3:   #6e6e73;
-      --gray4:   #aeaeb2;
-      --accent:  #0071e3;
-      --accent2: #004faa;
-      --green:   #34c759;
-      --red:     #ff3b30;
+      --gold:    #c9a227;
+      --gold2:   #e8cf6e;
+      --gray1:   #fdfaf2;
+      --gray2:   #ece3c8;
+      --gray3:   #8a8a86;
+      --gray4:   #c9c4b4;
+      --accent:  #c9a227;
+      --accent2: #a9851d;
+      --green:   #1d8a4a;
+      --red:     #c0392b;
       --radius:  14px;
     }
 
@@ -45,7 +47,7 @@
     }
     .monogram {
       width: 40px; height: 40px; border-radius: 50%;
-      background: var(--black);
+      background: linear-gradient(135deg, var(--gold2), var(--gold));
       display: flex; align-items: center; justify-content: center;
       font-size: 16px; color: #fff; letter-spacing: -0.5px; font-weight: 500;
     }
@@ -84,7 +86,7 @@
 
     .btn-main {
       width: 100%; height: 50px; border-radius: var(--radius);
-      background: var(--black); color: #fff;
+      background: var(--gold); color: #fff;
       border: none; font-size: 17px; font-weight: 500;
       cursor: pointer; margin-top: 8px;
       transition: opacity 0.15s;
@@ -123,13 +125,24 @@
       flex: 1; height: 3px; background: var(--gray2); border-radius: 2px; overflow: hidden;
     }
     .q-progress-fill {
-      height: 100%; background: var(--black); border-radius: 2px;
+      height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); border-radius: 2px;
       transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
     }
     .q-progress-label {
       font-size: 13px; color: var(--gray3); font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
+    .q-timer {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 700; color: var(--black);
+      font-variant-numeric: tabular-nums; white-space: nowrap;
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--gray1); border: 1.5px solid var(--gold2);
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .q-timer.urgent { background: #fdf0ee; border-color: #e0a194; color: var(--red); }
+    .q-timer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+    .q-timer.urgent .q-timer-dot { background: var(--red); }
 
     .q-text {
       font-size: 22px; font-weight: 600; letter-spacing: -0.3px;
@@ -157,7 +170,7 @@
       font-family: inherit;
     }
     .opt:not(.disabled):hover { border-color: var(--gray3); }
-    .opt.selected  { border-color: var(--black); background: var(--gray1); }
+    .opt.selected  { border-color: var(--gold); background: var(--gray1); }
     .opt.correct   { border-color: var(--green); background: #f0fff4; }
     .opt.wrong     { border-color: var(--red);   background: #fff5f5; }
     .opt.disabled  { cursor: default; }
@@ -169,7 +182,7 @@
       font-size: 13px; font-weight: 600; color: var(--gray3);
       flex-shrink: 0; transition: all 0.15s;
     }
-    .opt.selected  .opt-letter { background: var(--black); border-color: var(--black); color: #fff; }
+    .opt.selected  .opt-letter { background: var(--gold); border-color: var(--gold); color: #fff; }
     .opt.correct   .opt-letter { background: var(--green); border-color: var(--green); color: #fff; }
     .opt.wrong     .opt-letter { background: var(--red);   border-color: var(--red);   color: #fff; }
 
@@ -177,7 +190,7 @@
 
     .btn-validate {
       width: 100%; height: 50px; border-radius: var(--radius);
-      background: var(--black); color: #fff;
+      background: var(--gold); color: #fff;
       border: none; font-size: 15px; font-weight: 500;
       cursor: pointer; margin-top: 16px;
       transition: opacity 0.15s; font-family: inherit;
@@ -197,7 +210,7 @@
       display: inline-flex; align-items: baseline; gap: 4px;
       margin: 24px 0 12px;
     }
-    .score-num   { font-size: 80px; font-weight: 700; letter-spacing: -3px; color: var(--black); line-height: 1; }
+    .score-num   { font-size: 80px; font-weight: 700; letter-spacing: -3px; color: var(--gold); line-height: 1; }
     .score-total { font-size: 28px; font-weight: 400; color: var(--gray4); letter-spacing: -0.5px; }
     .score-label { font-size: 15px; color: var(--gray3); margin-bottom: 32px; }
     .done-hint {
@@ -236,6 +249,7 @@
       <div class="q-progress">
         <div class="q-progress-track"><div class="q-progress-fill" id="q-fill"></div></div>
         <div class="q-progress-label" id="q-label">1 / 1</div>
+        <div class="q-timer" id="q-timer"><span class="q-timer-dot"></span><span id="q-timer-val">20s</span></div>
       </div>
       <div class="q-text" id="q-text"></div>
       <div id="q-photo-wrap"></div>
@@ -271,6 +285,8 @@ if (!deviceId) {
 }
 let username = localStorage.getItem("mq_username") || null;
 let score = 0, totalQ = 0, questionStartTime = null;
+let countdownInterval = null;
+let timeExpired = false;
 
 function show(id) {
   ["screen-login","screen-wait","screen-question","screen-done"]
@@ -318,6 +334,7 @@ async function initAfterLogin() {
 }
 
 async function handleState(state) {
+  clearInterval(countdownInterval); // toujours nettoyer avant de changer d'écran
   if (state.status === "waiting") { show("screen-wait"); return; }
   if (state.status === "done" || state.status === "podium") { await showDone(); return; }
   if (state.status === "question") await showQuestion(state.current_question_index);
@@ -329,14 +346,21 @@ async function showQuestion(idx) {
   totalQ = qs.length;
   const q = qs[idx];
   if (!q) return;
-  const { data: existing } = await sb.from("quiz_votes").select("answer_index, is_correct").eq("question_id", q.id).eq("device_id", deviceId).maybeSingle();
+
+  const { data: state } = await sb.from("quiz_state")
+    .select("question_started_at, question_duration_sec").eq("id", 1).single();
+
+  const { data: existing } = await sb.from("quiz_votes")
+    .select("answer_index, is_correct").eq("question_id", q.id).eq("device_id", deviceId).maybeSingle();
+
   show("screen-question");   // rendre visible AVANT d'assigner img.src
-  renderQuestion(q, idx, existing);
+  renderQuestion(q, idx, existing, state);
 }
 
-function renderQuestion(q, idx, existing) {
-  // Démarrer le chrono seulement si pas encore voté (première affichage)
+function renderQuestion(q, idx, existing, state) {
+  // Démarrer le chrono local (pour mesurer le temps de réponse) seulement si pas encore voté
   if (!existing) questionStartTime = Date.now();
+  timeExpired = false;
   const voted = !!existing;
   const myVote = existing?.answer_index ?? null;
   const wasCorrect = existing?.is_correct ?? false;
@@ -361,6 +385,35 @@ function renderQuestion(q, idx, existing) {
     photoWrap.innerHTML = "";
   }
 
+  // ── Décompte synchronisé ──────────────────────────────────────
+  clearInterval(countdownInterval);
+  const durationSec = state?.question_duration_sec || 20;
+  const startedAt    = state?.question_started_at ? new Date(state.question_started_at).getTime() : Date.now();
+
+  function tick() {
+    const elapsed   = (Date.now() - startedAt) / 1000;
+    const remaining = Math.max(0, Math.ceil(durationSec - elapsed));
+    const timerEl   = document.getElementById("q-timer");
+    const timerVal  = document.getElementById("q-timer-val");
+    if (timerVal) timerVal.textContent = remaining + "s";
+    if (timerEl)  timerEl.classList.toggle("urgent", remaining <= 5);
+
+    if (remaining <= 0) {
+      clearInterval(countdownInterval);
+      if (!voted && !timeExpired) {
+        timeExpired = true;
+        handleTimeExpired(q, idx);
+      }
+    }
+  }
+  if (!voted) { tick(); countdownInterval = setInterval(tick, 250); }
+  else {
+    // Question déjà répondue : afficher le temps figé à 0 ou masquer le timer
+    const timerEl = document.getElementById("q-timer");
+    if (timerEl) timerEl.style.display = "none";
+  }
+  if (!voted) document.getElementById("q-timer").style.display = "flex";
+
   const opts = document.getElementById("q-opts");
   let selected = voted ? myVote : null;
 
@@ -370,9 +423,7 @@ function renderQuestion(q, idx, existing) {
     let cls = "opt";
     if (voted) {
       cls += " disabled";
-      if (i === correct) cls += " correct";
-      if (i === myVote && i !== correct) cls += " wrong";
-      if (i === myVote && i === correct) cls += " correct";
+      if (i === myVote) cls += " selected"; // on indique juste ce qui a été choisi, pas si c'est juste
     } else if (i === selected) cls += " selected";
     btn.className = cls;
     btn.innerHTML = `<span class="opt-letter">${LETTERS[i]}</span><span class="opt-text">${o}</span>`;
@@ -389,7 +440,7 @@ function renderQuestion(q, idx, existing) {
 
   const action = document.getElementById("q-action");
   if (voted) {
-    action.innerHTML = `<div class="voted-banner">${wasCorrect ? "Bonne réponse — +1 point" : "Réponse incorrecte"}</div>`;
+    action.innerHTML = `<div class="voted-banner">Réponse envoyée — résultat affiché sur l'écran principal</div>`;
   } else {
     action.innerHTML = `<button class="btn-validate" id="q-validate" disabled onclick="submitVote(${q.id},${correct})">Valider</button>`;
     const vBtn = document.getElementById("q-validate");
@@ -400,7 +451,26 @@ function renderQuestion(q, idx, existing) {
   }
 }
 
+async function handleTimeExpired(q, idx) {
+  // Désactiver les options et le bouton Valider
+  document.querySelectorAll("#q-opts .opt").forEach(b => b.classList.add("disabled"));
+  const vBtn = document.getElementById("q-validate");
+  if (vBtn) vBtn.disabled = true;
+
+  // Enregistrer un vote "temps écoulé" : answer_index = -1, toujours faux, 0 point
+  const responseTimeMs = questionStartTime ? (Date.now() - questionStartTime) : 0;
+  const { error } = await sb.from("quiz_votes").insert({
+    question_id: q.id, device_id: deviceId, username,
+    answer_index: -1, is_correct: false, response_time_ms: responseTimeMs
+  });
+  if (error && error.code !== "23505") return; // déjà voté entre-temps, on ignore
+
+  const action = document.getElementById("q-action");
+  if (action) action.innerHTML = `<div class="voted-banner">Temps écoulé — réponse non envoyée</div>`;
+}
+
 window.submitVote = async (qId, correctIdx) => {
+  clearInterval(countdownInterval);
   const selected = window._currentSelected?.();
   if (selected === null || selected === undefined) return;
   const btn = document.getElementById("q-validate");
