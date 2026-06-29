@@ -24,22 +24,24 @@
 
     .stage {
       height: 100vh; display: flex; flex-direction: row;
-      align-items: center; justify-content: center; gap: clamp(40px,6vw,90px);
+      align-items: center; justify-content: center; gap: clamp(32px,5vw,72px);
       padding: 40px; position: relative;
+      max-width: 1400px; margin: 0 auto;
     }
 
     .stage-main {
       display: flex; flex-direction: column;
       align-items: center; text-align: center;
-      gap: clamp(20px,3vh,36px);
-      z-index: 1;
+      gap: clamp(16px,2.4vh,28px);
+      z-index: 1; flex-shrink: 0;
     }
 
     .qr-image {
       z-index: 1;
-      width: clamp(190px,18vw,260px);
+      width: clamp(150px,14vw,200px);
       height: auto;
       filter: drop-shadow(0 20px 50px rgba(0,0,0,0.18));
+      flex-shrink: 0;
     }
 
     /* Décor doré discret en arrière-plan */
@@ -52,8 +54,70 @@
     .ring-3 { width: 100vmin; height: 100vmin; }
 
     @media (max-width: 860px) {
-      .stage { flex-direction: column; gap: clamp(24px,4vh,40px); }
-      .qr-image { width: clamp(150px,40vw,210px); }
+      .stage { flex-direction: column; gap: clamp(20px,3vh,32px); height: auto; min-height: 100vh; overflow-y: auto; }
+      .qr-image { width: clamp(130px,32vw,180px); }
+      .participants-panel { width: 100%; max-width: 480px; max-height: 220px; }
+    }
+
+    /* ── Panneau participants ── */
+    .participants-panel {
+      z-index: 1; flex-shrink: 0;
+      width: clamp(260px,24vw,360px);
+      max-height: min(560px, 78vh);
+      display: flex; flex-direction: column;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: clamp(16px,2vw,24px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+    }
+    .participants-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 14px; flex-shrink: 0;
+    }
+    .participants-title {
+      font-size: clamp(.78rem,1.1vw,.92rem); font-weight: 700;
+      color: var(--gold); letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .participants-count {
+      font-size: clamp(1.6rem,2.6vw,2.2rem); font-weight: 800;
+      color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums;
+    }
+    .participants-count span {
+      font-size: clamp(.75rem,1.1vw,.9rem); font-weight: 500;
+      color: var(--muted); margin-left: 4px;
+    }
+    .participants-list {
+      flex: 1; overflow-y: auto;
+      display: flex; flex-wrap: wrap; gap: 8px;
+      align-content: flex-start;
+      padding-right: 2px;
+    }
+    .participants-list::-webkit-scrollbar { width: 5px; }
+    .participants-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .participant-badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px 6px 6px;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: clamp(.8rem,1.1vw,.92rem); font-weight: 600; color: var(--ink);
+      opacity: 0; transform: translateY(6px) scale(0.96);
+      animation: badgeIn 0.35s ease forwards;
+    }
+    @keyframes badgeIn { to { opacity: 1; transform: translateY(0) scale(1); } }
+    .participant-avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold2), var(--gold));
+      color: #fff; font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .participants-empty {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      text-align: center; color: var(--muted); font-size: .9rem;
+      padding: 20px 10px;
     }
 
     .eyebrow {
@@ -131,6 +195,16 @@
 
   <img src="./qr-scan-me.png" alt="Scannez pour rejoindre le quiz" class="qr-image"/>
 
+  <div class="participants-panel">
+    <div class="participants-head">
+      <div class="participants-title">Participants</div>
+      <div class="participants-count" id="participants-count">0<span>inscrit(s)</span></div>
+    </div>
+    <div class="participants-list" id="participants-list">
+      <div class="participants-empty" id="participants-empty">En attente des premiers participants…</div>
+    </div>
+  </div>
+
   <div class="footer-hint">Affichage destiné au rétroprojecteur</div>
 </div>
 
@@ -145,6 +219,63 @@ if (!SUPABASE_URL || SUPABASE_URL.includes("XXXXXXXX")) {
 }
 
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── Liste des participants en temps réel ────────────────────────
+const participants = new Map(); // device_id -> username
+
+function initials(name) {
+  return name.trim().slice(0, 2).toUpperCase();
+}
+
+function renderParticipants() {
+  const listEl  = document.getElementById("participants-list");
+  const countEl = document.getElementById("participants-count");
+  const names   = Array.from(participants.values());
+
+  countEl.innerHTML = `${names.length}<span>inscrit${names.length !== 1 ? "s" : ""}</span>`;
+
+  if (names.length === 0) {
+    listEl.innerHTML = `<div class="participants-empty" id="participants-empty">En attente des premiers participants…</div>`;
+    return;
+  }
+
+  listEl.innerHTML = names.map(name => `
+    <div class="participant-badge">
+      <span class="participant-avatar">${initials(name)}</span>
+      ${name}
+    </div>`).join("");
+}
+
+async function loadParticipants() {
+  const { data, error } = await sb.from("quiz_players")
+    .select("device_id, username")
+    .order("created_at", { ascending: true });
+  if (error) { console.error("[participants] erreur chargement:", error); return; }
+  participants.clear();
+  (data || []).forEach(p => participants.set(p.device_id, p.username));
+  renderParticipants();
+}
+
+function subscribeParticipants() {
+  sb.channel("welcome_players")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "quiz_players" }, payload => {
+      participants.set(payload.new.device_id, payload.new.username);
+      renderParticipants();
+    })
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quiz_players" }, payload => {
+      participants.set(payload.new.device_id, payload.new.username);
+      renderParticipants();
+    })
+    .on("postgres_changes", { event: "DELETE", schema: "public", table: "quiz_players" }, payload => {
+      // Sur DELETE, Supabase ne fournit que les colonnes de la clé primaire par défaut (id)
+      // On gère ce cas en rechargeant la liste complète plutôt qu'en devinant le device_id
+      loadParticipants();
+    })
+    .subscribe();
+}
+
+loadParticipants();
+subscribeParticipants();
 
 window.launchQuiz = async () => {
   const btn = document.getElementById("btn-launch");
