@@ -135,9 +135,13 @@
     }
 
     .opts-grid {
-      display:grid; gap:clamp(4px,0.8vh,8px);
-      grid-template-columns:repeat(auto-fit,minmax(clamp(160px,35%,420px),1fr));
-      align-content:start; flex:1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: clamp(4px,0.8vh,10px);
+      width: 100%;
+      max-width: clamp(500px, 80vw, 1000px);
+      margin: 0 auto;
+      align-content: start;
     }
     .opt-card {
       background:var(--surface); border:1px solid var(--border);
