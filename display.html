@@ -105,29 +105,24 @@
       transition:width 0.5s cubic-bezier(0.4,0,0.2,1);
     }
 
-    /* Layout avec photo */
+    /* Layout une colonne : photo au-dessus des options si présente */
     .q-body { flex:1; display:flex; flex-direction:column; min-height:0; }
-    .q-body.has-photo {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      grid-template-rows: auto 1fr;
-      column-gap: clamp(16px,3vw,48px);
-    }
-    .q-body.has-photo .q-text       { grid-column:1; grid-row:1; }
-    .q-body.has-photo .opts-grid    { grid-column:1; grid-row:2; }
-    .q-body.has-photo .q-photo-side { grid-column:2; grid-row:1/3; display:flex; align-items:center; }
 
-    .q-photo-side { display:none; }
+    .q-photo-top {
+      width: 100%; flex-shrink: 0;
+      margin-bottom: clamp(12px,2vh,24px);
+      display: flex; align-items: center; justify-content: center;
+    }
     .q-photo-display {
-      width: clamp(200px,35vw,520px);
-      max-height: clamp(200px,55vh,520px);
-      object-fit: cover;
-      border-radius: clamp(10px,1.5vw,20px);
+      max-height: clamp(160px,36vh,420px);
+      max-width: 100%;
+      object-fit: contain;
+      border-radius: clamp(10px,1.5vw,18px);
       border: 1px solid var(--border);
     }
     .q-photo-skeleton {
-      width: clamp(200px,35vw,520px); height: clamp(180px,45vh,420px);
-      border-radius: clamp(10px,1.5vw,20px);
+      width: 100%; height: clamp(160px,36vh,300px);
+      border-radius: clamp(10px,1.5vw,18px);
       background: var(--border);
       animation: shimmer 1.4s ease-in-out infinite;
     }
@@ -234,8 +229,8 @@
   <div class="q-progress-bar"><div class="q-progress-fill" id="q-pbar"></div></div>
   <div class="q-body" id="q-body">
     <div class="q-text" id="q-text"></div>
+    <div class="q-photo-top" id="q-photo-top" style="display:none"></div>
     <div class="opts-grid" id="opts-grid"></div>
-    <div class="q-photo-side" id="q-photo-side"></div>
   </div>
 </div>
 
@@ -318,23 +313,25 @@ function renderQ(q, idx, state) {
   nextBtn.style.visibility = "visible";
   nextBtn.disabled = true;
 
-  // Photo optionnelle — layout deux colonnes si présente
-  const body      = document.getElementById("q-body");
-  const photoSide = document.getElementById("q-photo-side");
+  // Si une photo est associée : masquer le texte, afficher la photo AU-DESSUS des options
+  // Sinon : afficher le texte normalement, masquer la zone photo
+  const qTextEl  = document.getElementById("q-text");
+  const photoTop = document.getElementById("q-photo-top");
+
   if (q.photo_url) {
-    body.classList.add("has-photo");
-    photoSide.style.display = "flex";
-    photoSide.innerHTML = `<div class="q-photo-skeleton" id="dsk"></div>`;
+    qTextEl.style.display  = "none";   // texte masqué côté public
+    photoTop.style.display = "flex";
+    photoTop.innerHTML = `<div class="q-photo-skeleton" id="dsk"></div>`;
     const img = new Image();
     img.className = "q-photo-display";
     img.alt       = "illustration";
     img.onload  = () => { const sk=document.getElementById("dsk"); if(sk) sk.replaceWith(img); };
-    img.onerror = () => { body.classList.remove("has-photo"); photoSide.style.display="none"; photoSide.innerHTML=""; };
+    img.onerror = () => { qTextEl.style.display="block"; photoTop.style.display="none"; photoTop.innerHTML=""; };
     img.src = q.photo_url;
   } else {
-    body.classList.remove("has-photo");
-    photoSide.style.display = "none";
-    photoSide.innerHTML = "";
+    qTextEl.style.display  = "block";  // texte visible si pas de photo
+    photoTop.style.display = "none";
+    photoTop.innerHTML = "";
   }
 
   document.getElementById("opts-grid").innerHTML = q.options.map((o,j)=>`
