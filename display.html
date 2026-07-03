@@ -147,16 +147,37 @@
       background:var(--surface); border:1px solid var(--border);
       border-radius:10px; padding:clamp(6px,0.9vh,10px) clamp(8px,1vw,14px);
       display:flex; flex-direction:column; gap:clamp(3px,0.5vh,6px);
-      transition: border-color 0.3s, background 0.3s;
+      transition: border-color 0.3s, background 0.3s, opacity 0.4s ease, transform 0.4s ease;
     }
-    .opt-card.is-correct {
+
+    /* Mauvaises réponses — disparaissent en fondu */
+    .opt-card.fade-out {
+      opacity: 0;
+      transform: scale(0.94);
+      pointer-events: none;
+    }
+
+    /* Bonne réponse — s'étend sur toute la grille */
+    .opt-card.expand-correct {
+      grid-column: 1 / -1;
       border-color: var(--green);
       background: #f0faf3;
+      animation: expandIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
     }
-    .opt-card.is-correct .opt-badge {
-      border-color: var(--green); color: #fff; background: var(--green);
+    .opt-card.expand-correct .opt-badge {
+      border-color: var(--green); background: var(--green); color: #fff;
     }
-    .opt-card.is-correct .opt-bar-fill { background: var(--green); }
+    .opt-card.expand-correct .opt-bar-fill { background: var(--green); }
+    .opt-card.expand-correct .opt-text {
+      font-size: clamp(1rem,2.2vw,1.8rem); font-weight: 700;
+    }
+
+    @keyframes expandIn {
+      0%   { opacity:0.6; transform: scale(0.97); }
+      60%  { transform: scale(1.02); }
+      100% { opacity:1;   transform: scale(1); }
+    }
+
     .opt-correct-tag {
       display: inline-flex; align-items: center; gap: 4px;
       font-size: clamp(.65rem,1vw,.8rem); font-weight: 700; color: var(--green);
@@ -358,22 +379,42 @@ function renderQ(q, idx, state) {
     if (answerRevealed) return;
     answerRevealed = true;
 
-    // Le présentateur peut désormais passer à la question suivante
+    // Activer le bouton Suivante
     const nextBtn = document.getElementById("btn-next-host");
     if (nextBtn) nextBtn.disabled = false;
 
     const correctIdx = q.correct_answer_index;
-    const card = document.getElementById(`oc-${correctIdx}`);
-    if (card) {
-      card.classList.add("is-correct");
-      const top = card.querySelector(".opt-card-top");
-      if (top && !card.querySelector(".opt-correct-tag")) {
-        const tag = document.createElement("div");
-        tag.className = "opt-correct-tag";
-        tag.textContent = "✓ Bonne réponse";
-        card.appendChild(tag);
+
+    // Étape 1 — fade out simultané de toutes les mauvaises réponses
+    q.options.forEach((_, j) => {
+      if (j !== correctIdx) {
+        document.getElementById(`oc-${j}`)?.classList.add("fade-out");
       }
-    }
+    });
+
+    // Étape 2 — après la fin du fondu (400ms), masquer les cartes
+    // et faire s'expand la bonne réponse sur toute la grille
+    setTimeout(() => {
+      q.options.forEach((_, j) => {
+        if (j !== correctIdx) {
+          const card = document.getElementById(`oc-${j}`);
+          if (card) card.style.display = "none";
+        }
+      });
+
+      const correct = document.getElementById(`oc-${correctIdx}`);
+      if (correct) {
+        correct.classList.add("expand-correct");
+
+        // Ajouter le tag "✓ Bonne réponse" si pas déjà présent
+        if (!correct.querySelector(".opt-correct-tag")) {
+          const tag = document.createElement("div");
+          tag.className = "opt-correct-tag";
+          tag.textContent = "✓ Bonne réponse";
+          correct.appendChild(tag);
+        }
+      }
+    }, 420);
   }
 
   function tick() {
