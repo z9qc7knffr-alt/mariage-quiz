@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Affichage — Quiz Mariage</title>
   <script src="./config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -153,35 +154,82 @@
     /* Mauvaises réponses — disparaissent en fondu */
     .opt-card.fade-out {
       opacity: 0;
-      transform: scale(0.94);
+      transform: scale(0.92);
       pointer-events: none;
     }
 
-    /* Bonne réponse — s'étend sur toute la grille */
+    /* Bonne réponse — s'étend et explose */
     .opt-card.expand-correct {
       grid-column: 1 / -1;
-      border-color: var(--green);
+      border: 2.5px solid var(--green);
       background: #f0faf3;
-      animation: expandIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+      position: relative;
+      overflow: visible;
+      animation: expandIn 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
+      z-index: 2;
     }
     .opt-card.expand-correct .opt-badge {
       border-color: var(--green); background: var(--green); color: #fff;
+      width: clamp(36px,4.5vw,58px); height: clamp(36px,4.5vw,58px);
+      font-size: clamp(.9rem,1.8vw,1.35rem);
+      animation: badgePop 0.5s 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .opt-card.expand-correct .opt-text {
+      font-size: clamp(1.3rem,3vw,2.4rem);
+      font-weight: 800;
+      animation: textSlide 0.5s 0.25s ease both;
     }
     .opt-card.expand-correct .opt-bar-fill { background: var(--green); }
-    .opt-card.expand-correct .opt-text {
-      font-size: clamp(1rem,2.2vw,1.8rem); font-weight: 700;
+
+    /* Halo lumineux animé autour de la carte */
+    .opt-card.expand-correct::before {
+      content: "";
+      position: absolute; inset: -6px;
+      border-radius: 14px;
+      background: transparent;
+      box-shadow: 0 0 0 4px rgba(29,138,74,0.4), 0 0 40px 10px rgba(29,138,74,0.2);
+      animation: haloGlow 1.2s 0.4s ease-out both;
+      z-index: -1;
+    }
+
+    /* Étoiles scintillantes autour de la carte */
+    .opt-card.expand-correct::after {
+      content: "✦";
+      position: absolute; top: -28px; right: 20px;
+      font-size: clamp(1.2rem,2.5vw,2rem); color: var(--gold);
+      animation: starPop 0.7s 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
     }
 
     @keyframes expandIn {
-      0%   { opacity:0.6; transform: scale(0.97); }
-      60%  { transform: scale(1.02); }
+      0%   { opacity:0;   transform: scale(0.85); }
+      50%  { transform: scale(1.04); }
       100% { opacity:1;   transform: scale(1); }
+    }
+    @keyframes badgePop {
+      0%   { transform: scale(0); }
+      70%  { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+    @keyframes textSlide {
+      0%   { opacity:0; transform: translateX(-12px); }
+      100% { opacity:1; transform: translateX(0); }
+    }
+    @keyframes haloGlow {
+      0%   { opacity:0; box-shadow: 0 0 0 0px rgba(29,138,74,0), 0 0 0 0px rgba(29,138,74,0); }
+      40%  { opacity:1; box-shadow: 0 0 0 6px rgba(29,138,74,0.5), 0 0 60px 20px rgba(29,138,74,0.3); }
+      100% { opacity:1; box-shadow: 0 0 0 4px rgba(29,138,74,0.25), 0 0 30px 8px rgba(29,138,74,0.1); }
+    }
+    @keyframes starPop {
+      0%   { opacity:0; transform: scale(0) rotate(-30deg); }
+      60%  { opacity:1; transform: scale(1.4) rotate(10deg); }
+      100% { opacity:1; transform: scale(1) rotate(0deg); }
     }
 
     .opt-correct-tag {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: clamp(.65rem,1vw,.8rem); font-weight: 700; color: var(--green);
-      margin-top: 1px;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: clamp(.8rem,1.4vw,1.1rem); font-weight: 700; color: var(--green);
+      margin-top: 4px;
+      animation: textSlide 0.5s 0.45s ease both; opacity:0;
     }
     .opt-card-top { display:flex; align-items:center; gap:clamp(6px,1vw,10px); }
     .opt-badge {
@@ -385,15 +433,14 @@ function renderQ(q, idx, state) {
 
     const correctIdx = q.correct_answer_index;
 
-    // Étape 1 — fade out simultané de toutes les mauvaises réponses
+    // ── Étape 1 (immédiat) : fade out des mauvaises réponses ──
     q.options.forEach((_, j) => {
       if (j !== correctIdx) {
         document.getElementById(`oc-${j}`)?.classList.add("fade-out");
       }
     });
 
-    // Étape 2 — après la fin du fondu (400ms), masquer les cartes
-    // et faire s'expand la bonne réponse sur toute la grille
+    // ── Étape 2 (420ms) : expand de la bonne réponse ──
     setTimeout(() => {
       q.options.forEach((_, j) => {
         if (j !== correctIdx) {
@@ -405,8 +452,6 @@ function renderQ(q, idx, state) {
       const correct = document.getElementById(`oc-${correctIdx}`);
       if (correct) {
         correct.classList.add("expand-correct");
-
-        // Ajouter le tag "✓ Bonne réponse" si pas déjà présent
         if (!correct.querySelector(".opt-correct-tag")) {
           const tag = document.createElement("div");
           tag.className = "opt-correct-tag";
@@ -415,6 +460,65 @@ function renderQ(q, idx, state) {
         }
       }
     }, 420);
+
+    // ── Étape 3 (700ms) : explosion de confettis multi-vagues ──
+    setTimeout(() => {
+      const colors = ["#c9a227", "#e8cf6e", "#1d8a4a", "#ffffff", "#f5e6a3"];
+
+      // Vague 1 — explosion centrale
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { x: 0.5, y: 0.55 },
+        colors,
+        scalar: 1.2,
+        zIndex: 9999,
+      });
+
+      // Vague 2 (150ms) — gerbe depuis la gauche
+      setTimeout(() => confetti({
+        particleCount: 60,
+        angle: 60,
+        spread: 70,
+        origin: { x: 0, y: 0.6 },
+        colors,
+        zIndex: 9999,
+      }), 150);
+
+      // Vague 3 (150ms) — gerbe depuis la droite
+      setTimeout(() => confetti({
+        particleCount: 60,
+        angle: 120,
+        spread: 70,
+        origin: { x: 1, y: 0.6 },
+        colors,
+        zIndex: 9999,
+      }), 150);
+
+      // Vague 4 (500ms) — pluie dorée depuis le haut
+      setTimeout(() => confetti({
+        particleCount: 80,
+        spread: 120,
+        startVelocity: 20,
+        gravity: 0.6,
+        origin: { x: 0.5, y: 0 },
+        colors: ["#c9a227", "#e8cf6e", "#f5e6a3", "#fff"],
+        shapes: ["square"],
+        scalar: 0.8,
+        zIndex: 9999,
+      }), 500);
+
+      // Vague 5 (900ms) — rafale finale
+      setTimeout(() => confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { x: 0.5, y: 0.5 },
+        colors,
+        startVelocity: 35,
+        zIndex: 9999,
+      }), 900);
+
+    }, 700);
   }
 
   function tick() {
