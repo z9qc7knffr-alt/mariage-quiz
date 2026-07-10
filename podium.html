@@ -204,7 +204,7 @@ function renderStage(top) {
       <div class="s-avatar">${initials(s.player.username)}</div>
       <div class="s-name">${s.player.username}</div>
       <div class="s-score">${s.player.score} pt${s.player.score!==1?"s":""}</div>
-      ${s.player.total_time_ms ? `<div class="s-time">${fmtTime(s.player.total_time_ms)}</div>` : ""}
+      ${s.player.total_time_ms ? `<div class="s-time">⏱ ${fmtTime(s.player.total_time_ms)} cumulé</div>` : ""}
       <div class="s-block ${s.block}">${s.label}</div>
     </div>`).join("");
 
@@ -227,7 +227,7 @@ function renderList(players, max) {
       </div>
       <div class="r-score">
         ${p.score} pt${p.score!==1?"s":""}
-        ${p.total_time_ms ? `<span class="r-time">${fmtTime(p.total_time_ms)}</span>` : ""}
+        ${p.total_time_ms ? `<span class="r-time">⏱ ${fmtTime(p.total_time_ms)} cumulé</span>` : ""}
       </div>
     </div>`).join("");
 
