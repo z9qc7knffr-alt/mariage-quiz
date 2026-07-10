@@ -196,7 +196,13 @@
     <div class="error-msg" id="launch-error"></div>
   </div>
 
-  <img src="./qr-scan-me.png" alt="Scannez pour rejoindre le quiz" class="qr-image"/>
+  <div style="z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px;">
+    <img src="./qr-scan-me.png?v=2" alt="Scannez pour rejoindre le quiz" class="qr-image"/>
+    <div style="font-size:clamp(.7rem,1.1vw,.9rem); color:var(--muted); text-align:center; line-height:1.4;">
+      Ou accédez à l'adresse :<br>
+      <span style="font-weight:700; color:var(--gold); font-size:clamp(.75rem,1.2vw,.95rem);">https://z9qc7knffr-alt.github.io/mariage-quiz/</span>
+    </div>
+  </div>
 
   <div class="participants-panel">
     <div class="participants-head">
